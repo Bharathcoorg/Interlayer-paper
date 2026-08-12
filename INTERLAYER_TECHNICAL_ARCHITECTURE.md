@@ -15,7 +15,33 @@ This document presents the core protocol specification and technical architectur
 
 Rather than relying on traditional wrapped-asset bridge contracts that lock assets on Chain A to mint synthetic tokens on Chain B, InterLayer introduces a native **LiteVerse DePIN Watcher Mesh** paired with **Threshold Multi-Party Computation (MPC TSS)**. Users receive unique per-user, per-chain deposit addresses across Bitcoin, Ethereum, Solana, and external networks; deposits are verified directly into a single unified native balance usable seamlessly across all five internal VM execution environments.
 
-This specification establishes the core architectural design of the global state trie, the atomic transaction execution engine, the state rollback engine, the universal gas calibration model, the canonical unified address resolution system, the 3-Chain HotStuff BFT consensus protocol, the off-chain threshold MPC key generation and signing protocols, the non-inflationary real-yield fee distribution engine, and exhaustive technical specifications for 35 core active Substrate runtime pallets.
+This specification establishes the core architectural design of the global state trie, the atomic transaction execution engine, the state rollback engine, the universal gas calibration model, the canonical unified address resolution system, the 3-Chain HotStuff BFT consensus protocol, the off-chain threshold MPC key generation and signing protocols, the non-inflationary real-yield fee distribution engine, and exhaustive technical specifications for 36 core active Substrate runtime pallets.
+
+---
+
+## Document Scope & Conventions
+
+This is a **protocol architecture specification** describing the target system design of InterLayer 2.0 (Gravity Testnet). It serves as the authoritative reference for protocol designers, validators, and developers building on InterLayer.
+
+**Conventions used in this document:**
+- **Rust code blocks** represent either actual production code extracted from the repository or design-target pseudocode illustrating intended data structures and algorithms. When a code block is sourced directly from a specific file, the source is noted in the surrounding text.
+- **Tables and parameter values** (gas costs, fee percentages, confirmation depths, staking parameters) reflect the current testnet configuration. All governance-configurable parameters are noted as such.
+- Features not yet implemented are described as part of the target architecture and will be delivered in subsequent releases.
+
+## Implementation Status
+
+| Component | Status | Details |
+| :--- | :--- | :--- |
+| **Substrate Runtime** | ✅ Implemented | 173 KB monolithic runtime (`runtime/src/lib.rs`) |
+| **Runtime Pallets** | ✅ 38 pallets implemented | All 38 have `#[pallet::call]`, `#[pallet::storage]`, `#[pallet::event]`; 14/38 have unit tests |
+| **HotStuff BFT Consensus** | ✅ Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) |
+| **VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | ✅ Integrated | Compiled inline within the monolithic runtime (not separate crate directories) |
+| **RPC Handlers** | ✅ Implemented | 10 handler files, 4,381 total lines across 18 namespaces |
+| **MPC Threshold Signer** | ✅ Executor implemented | `mpc-executor/`: 9 Rust source files; `mpc-nodes/` and `mpc-recovery/` are Docker orchestration configurations |
+| **Portal Dashboard** | ✅ Implemented | Full-stack web application for testnet interaction |
+| **Bridge Pallet** | ⏸️ Optional | 915 lines implemented but excluded from core spec (future activation via governance) |
+| **DEX Pallet** | ⏸️ Optional | 218 lines implemented but excluded from core spec (future activation via governance) |
+| **LiteVerse Mobile App** | 📋 Planned | CLI tooling available; mobile app planned for Phase 2 |
 
 ---
 
