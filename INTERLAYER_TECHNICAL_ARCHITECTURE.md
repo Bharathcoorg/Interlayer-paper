@@ -42,7 +42,7 @@ This is a **protocol architecture specification** describing the target system d
 | **Block Explorer** | 🛠️ Standalone Utility | Standalone block and state explorer (`explorer/`) interacting via JSON-RPC |
 | **Bridge Pallet** | ⏸️ Optional | 915 lines implemented but excluded from core spec (future activation via governance) |
 | **DEX Pallet** | ⏸️ Optional | 218 lines implemented but excluded from core spec (future activation via governance) |
-| **LiteVerse Mobile App** | 📋 Planned | CLI tooling available; mobile app planned for Phase 2 |
+| **LiteVerse Watcher Nodes** | ✅ Implemented | Mobile Watcher Node (Android/iOS), Browser Node (WASM), and LiteVerse Dashboard are developed and active (Tier 0 & Tier 1) |
 
 ---
 
@@ -99,7 +99,6 @@ The design of InterLayer rests upon four foundational architectural principles:
 
 ### 1.3 Minimalist System Architecture Diagram
 
-![Figure: InterLayer System Architecture — Substrate Runtime, MEL Multi-VM Execution Layer, five VM adapters, shared runtime services, and developer ecosystem.](images/mel_architecture.png)
 
 ---
 
@@ -247,8 +246,6 @@ MEL resolves this by providing a unified meta-execution layer. When an **Atomic 
 4. **Instant Rollback**: If any operation produces an exception or error (`error_i != None`), the rollback operator  reverts global state back to `state`, leaving storage untouched.
 
 ### 3.2 Atomic Execution Flowchart
-
-![Figure: Atomic Cross-VM Execution Flow — Snapshot, Execute, Validate, Commit/Rollback phases across EVM, SVM, PolkaVM, Move, and CosmWasm.](images/atomic_execution_flow.png)
 
 ![Figure 2: Atomic Cross-VM Execution Flow  The 5-phase pipeline showing snapshot creation, source VM execution, target VM execution, validation, and commit/rollback branching.](images/atomic_execution_flow.png)
 
@@ -710,7 +707,7 @@ Deposit finalization from external chains requires minimum confirmation depths t
 
 ### 5.2 Liquidity Inflow & Outflow Flowchart
 
-![Figure: Liquidity Inflow and Outflow — User deposit flow through external chains, unique deposit addresses, LiteVerse verification, and unified balance. Withdrawal flow through validators and MPC threshold signing.](images/liquidity_flow.png)
+![Figure 3: Liquidity Inflow and Outflow — User deposit flow through external chains, unique deposit addresses, LiteVerse verification, and unified balance. Withdrawal flow through validators and MPC threshold signing.](images/liquidity_flow.png)
 
 ### 5.3 Implementation: `liteverse-pallet` Architecture
 
@@ -1248,7 +1245,7 @@ The Wasm runtime environment provides host imports that CosmWasm contracts can c
 
 ## Chapter 8: Off-Chain Threshold MPC Signer Infrastructure (TSS)
 
-![Figure 3: Threshold MPC Signing Process  Subset of t participants generate partial signatures using Lagrange interpolation, aggregated into a single threshold signature verified against the group public key.](images/mpc_threshold_signing.png)
+![Figure 4: Threshold MPC Signing Process  Subset of t participants generate partial signatures using Lagrange interpolation, aggregated into a single threshold signature verified against the group public key.](images/mpc_threshold_signing.png)
 
 This chapter details the off-chain Multi-Party Computation (MPC) threshold signing infrastructure implemented in the `mpc-executor` crate. The MPC signer network enables InterLayer to authorize cross-chain transactions (withdrawals, bridge operations) without any single entity holding a complete private key.
 
@@ -2228,7 +2225,7 @@ Call indices are part of the testnet compatibility surface. A runtime upgrade ma
 ---
 
 
-### 11.37 Pallet `native-assets` — Complete Deposit & Withdrawal Engine
+#### 11.19.1 Complete Deposit & Withdrawal Engine (`native-assets`)
 
 **Functional Responsibility**: The core custody and asset accounting engine (2,748 lines). Manages the complete lifecycle of external assets from deposit address generation through confirmation, crediting, withdrawal, and solvency verification.
 
@@ -2280,21 +2277,6 @@ Call indices are part of the testnet compatibility surface. A runtime upgrade ma
 
 ---
 
-
-### 11.38 Optional & Future Governance Pallets (`bridge-pallet`, `dex-pallet`)
-
-*Note: The following two pallets exist in `runtime/pallets/` (915 lines and 218 lines respectively) as pre-built modules for future governance activation. They are excluded from the core active runtime profile to maintain zero-trust, sequencer-free architecture.*
-
-#### Pallet `bridge-pallet` (⏸️ Optional)
-- **Functional Responsibility**: Legacy wrapped-asset lock/mint bridge interface. Deactivated in favor of LiteVerse DePIN Watcher Mesh & MPC TSS Native Custody. Preserved for optional future sidechain connectivity.
-- **Storage**: `BridgeOperations<T>`, `DailyWithdrawalLimits<T>`
-- **Extrinsics**: `initiate_bridge_transfer`, `fulfill_bridge_transfer`
-
-#### Pallet `dex-pallet` (⏸️ Optional)
-- **Functional Responsibility**: Basic automated market maker (AMM) constant-product liquidity pool interface (`mel-dex`). Deactivated in core spec; decentralized swap functionality is handled natively via multi-VM contracts (Solidity/SVM dApps) running on the MEL bus.
-- **Storage**: `Pool<T>`, `LastOut<T>`
-- **Extrinsics**: `swap(origin, amount_in, min_amount_out)`
-- **MEV Integration**: Implements `MevGuard` trait to prevent front-running during pool swaps.
 
 ---
 
@@ -3053,6 +3035,8 @@ enum AgentStatus { Active, Suspended, Deregistered }
 ---
 
 ## Appendix C: Public Runtime Composition Index
+
+*Note: The core active Substrate runtime comprises 36 primary pallets. Two optional legacy pallets (`bridge-pallet` and `dex-pallet`) are preserved in `runtime/pallets/` for optional future governance activation.*
 
 This is the public composition index for the 36 InterLayer active runtime pallets specified in Chapter 11. It deliberately identifies protocol components rather than local source modules or implementation ordering. The authoritative callable pallet index and call indices for a deployed testnet instance are the SCALE runtime metadata returned by that instance; clients MUST use the metadata version that they connect to.
 
