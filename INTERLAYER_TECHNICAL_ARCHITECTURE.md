@@ -38,7 +38,8 @@ This is a **protocol architecture specification** describing the target system d
 | **VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | ✅ Integrated | Compiled inline within the monolithic runtime (not separate crate directories) |
 | **RPC Handlers** | ✅ Implemented | 10 handler files, 4,381 total lines across 18 namespaces |
 | **MPC Threshold Signer** | ✅ Executor implemented | `mpc-executor/`: 9 Rust source files; `mpc-nodes/` and `mpc-recovery/` are Docker orchestration configurations |
-| **Portal Dashboard** | ✅ Implemented | Full-stack web application for testnet interaction |
+| **Portal Dashboard** | 🛠️ Standalone Utility | External Web3 dApp interface (`portal/`) for testnet interaction (not a runtime pallet) |
+| **Block Explorer** | 🛠️ Standalone Utility | Standalone block and state explorer (`explorer/`) interacting via JSON-RPC |
 | **Bridge Pallet** | ⏸️ Optional | 915 lines implemented but excluded from core spec (future activation via governance) |
 | **DEX Pallet** | ⏸️ Optional | 218 lines implemented but excluded from core spec (future activation via governance) |
 | **LiteVerse Mobile App** | 📋 Planned | CLI tooling available; mobile app planned for Phase 2 |
@@ -615,6 +616,47 @@ enum VmType { EVM, SVM, PolkaVM, Move, Cosmos }
 - `ExecutionNonces<T>`: Nonce counter per account for Portal call execution
 
 **Extrinsics:** `create_smart_account`, `bind_external_wallet`, `unbind_external_wallet`, `execute_portal_call`
+
+
+---
+
+
+### 4.9 Complete Handle & Naming System (`pallet-handles` + `unified-address-registry`)
+
+InterLayer provides a human-readable naming system where users register handles (e.g., `alice`) and resolve them to any VM-specific address across the ecosystem.
+
+#### Handle Lifecycle Extrinsics
+
+| Extrinsic | Origin | Description |
+| :--- | :--- | :--- |
+| `register_handle(handle)` | Signed | Register a new human-readable handle (e.g., `alice`). Must be unique and pass format validation. |
+| `register_random_handle()` | Signed | Register a system-generated random handle for users who don't want to choose one. |
+| `change_handle(old_handle, new_handle)` | Signed (owner) | Change an existing handle to a new one. Old handle is released after cooldown. |
+| `transfer_handle(handle, new_owner)` | Signed (owner) | Transfer handle ownership to another account. |
+| `verify_handle(handle)` | Signed | Mark a handle as verified (requires proof of ownership). |
+| `is_handle_available(handle)` | Query | Check if a handle is available for registration. |
+| `resolve_address(handle, domain)` | Query | Resolve a handle to a chain-specific address (e.g., `alice@eth` returns `0x...`). |
+| `get_handles_by_owner(owner)` | Query | List all handles owned by an account. |
+| `cleanup_expired_handles()` | Offchain Worker | Automatically releases expired or abandoned handles. |
+
+#### Handle Storage Layout
+
+- `Usernames<T>`: Maps handle bytes to `HandleRegistration` (owner, block, verified status)
+- `AccountUsernames<T>`: Reverse map from `AccountId` to owned handles
+- `CustomVMAddresses<T>`: Double map of `(AccountId, VmType)` to custom VM-specific addresses
+- `HandleRegistrations<T>`: Full registration metadata per handle
+- `AddressMappings<T>`: Maps `(handle, ChainDomain)` to `UnifiedAddress`
+
+#### Address Mapping Extrinsics
+
+| Extrinsic | Description |
+| :--- | :--- |
+| `create_address_mapping(handle, domain, address)` | Map a handle to a chain-specific address (e.g., `alice@btc` = `bc1q...`) |
+| `update_address_mapping(handle, domain, new_address)` | Update an existing address mapping |
+
+#### Supported Chain Domains
+
+Handles resolve across six chain domains: `@eth` (Ethereum/EVM), `@sol` (Solana/SVM), `@dot` (Polkadot/PolkaVM), `@btc` (Bitcoin), `@ton` (TON), `@move` (Move VM).
 
 
 ---
@@ -1280,7 +1322,7 @@ For deposit-address allocation, the protocol derives child *public keys* from an
 
 and the chain code is c_i=I_R. Each signer derives the corresponding additive share locally, , so no process learns the group scalar. Invalid tweaks and the point at infinity are rejected. Hardened derivation is permitted only through an explicit distributed derivation protocol; it MUST NOT be implemented by collecting key shares at a coordinator.
 
-The allocated path binds the environment, external chain, account, and user index. The testnet profile reserves the BIP-44 coin-type path `m/44'/9999'/chain'/account'/0/i`; the exact `chain` and `account` components are recorded with the deposit-address allocation and signed into the withdrawal request.
+The allocated path binds the environment, external chain, account, and user index. The testnet profile reserves the BIP-44 coin-type path `m/44'/2021'/chain'/account'/0/i`; the exact `chain` and `account` components are recorded with the deposit-address allocation and signed into the withdrawal request.
 
 ---
 
@@ -1555,6 +1597,18 @@ InterLayer supports native connectivity with major Web3 wallet ecosystems:
 | **Petra / Martian** | Move | Aptos Wallet Adapter | Ed25519 |
 
 External wallet binding uses signature challenges: EIP-191 for EVM wallets, Ed25519 for Solana/TON, and Sr25519 for Polkadot. Bindings are stored in `unified-address-registry` with handle resolution (`name@eth`, `name@sol`, `name@dot`, `name@ton`).
+
+---
+
+
+### 10.12 VM Feature Adoption Pipeline & Canary Upgrade Gates
+
+To maintain security while adopting upstream VM improvements (EVM, SVM, PolkaVM, Move VM, CosmWasm), InterLayer implements an offchain worker-driven feature adoption pipeline:
+
+1. **Upstream Release Monitoring**: An automated Substrate off-chain worker polls upstream repositories for VM runtime updates, security patches, and compiler enhancements.
+2. **Autonomous Governance Drafting**: Upon detecting a validated release, the offchain worker constructs an automated governance proposal containing changelogs, risk metrics, and integration test plans.
+3. **Canary Environment & Feature Gates**: Upstream upgrades are deployed behind runtime feature gates (`#[cfg(feature = "canary-vm")]`) in a canary environment prior to mainnet/testnet enactment.
+4. **Emergency Overrides**: Per-VM governance parameters allow the Technical Committee to instantly toggle feature gates or trigger emergency rollbacks if an upstream VM vulnerability is detected.
 
 ---
 
@@ -2173,6 +2227,77 @@ Call indices are part of the testnet compatibility surface. A runtime upgrade ma
 
 ---
 
+
+### 11.37 Pallet `native-assets` — Complete Deposit & Withdrawal Engine
+
+**Functional Responsibility**: The core custody and asset accounting engine (2,748 lines). Manages the complete lifecycle of external assets from deposit address generation through confirmation, crediting, withdrawal, and solvency verification.
+
+#### Deposit Flow Extrinsics
+
+| Extrinsic | Origin | Description |
+| :--- | :--- | :--- |
+| `generate_deposit_address(asset_id)` | Signed | Request MPC nodes to derive a unique per-user deposit address for a specific external chain (BTC/ETH/SOL/DOT) |
+| `provide_deposit_address(user, asset_id, address, pubkey)` | Validator | MPC node provides the derived deposit address back to the runtime with verification key material |
+| `cancel_deposit_address_request(user, asset_id)` | Validator | Cancel a pending deposit address generation request |
+| `record_deposit_address_request_failure(user, asset_id, reason)` | Validator | Record a failed address generation attempt for diagnostics |
+| `initiate_deposit(asset_id, tx_proof, amount)` | Validator | Submit proof of an observed external chain deposit (tx hash, merkle proof, block header) |
+| `confirm_deposit(deposit_id)` | Validator | Confirm a deposit after sufficient confirmations (BTC 6, ETH 12, SOL 32) have been reached |
+
+#### Withdrawal Flow Extrinsics
+
+| Extrinsic | Origin | Description |
+| :--- | :--- | :--- |
+| `initiate_withdrawal(asset_id, amount, destination)` | Signed | User requests withdrawal to an external chain address |
+| `set_withdrawal_tx_hash(withdrawal_id, tx_hash)` | Validator | Record the external chain transaction hash after MPC threshold signing and broadcasting |
+
+#### Custody Management Extrinsics
+
+| Extrinsic | Origin | Description |
+| :--- | :--- | :--- |
+| `set_mpc_public_key(asset_id, pubkey)` | Sudo/Governance | Set or rotate the MPC group public key used for address derivation |
+| `set_hot_wallet_address(asset_id, address)` | Sudo/Governance | Configure the hot wallet address for a specific asset |
+| `set_treasury_address(asset_id, address)` | Sudo/Governance | Configure the cold treasury address for a specific asset |
+| `check_solvency(asset_id)` | Any | Verify that on-chain reserves match outstanding liabilities for a specific asset |
+| `record_reorg(chain_id, depth, affected_deposits)` | Validator | Handle external chain reorganization events — roll back affected pending deposits |
+
+#### Asset Registry Extrinsics
+
+| Extrinsic | Origin | Description |
+| :--- | :--- | :--- |
+| `register_asset(asset_id, name, chain, decimals)` | Sudo/Governance | Register a new external asset in the MEL registry (e.g., BTC, ETH, SOL) |
+
+#### Key Storage Items
+
+- `DepositAddresses<T>`: Maps `(AccountId, AssetId)` to derived deposit address
+- `Deposits<T>`: Maps `DepositId` to `DepositRecord` (status, amount, confirmations, block)
+- `Withdrawals<T>`: Maps `WithdrawalId` to `WithdrawalRecord` (status, destination, tx_hash)
+- `AssetReserves<T>`: Maps `AssetId` to total reserve balance (hot + cold)
+- `AssetLiabilities<T>`: Maps `AssetId` to total outstanding user balances
+- `MpcPublicKeys<T>`: Maps `AssetId` to current MPC group public key
+- `HotWalletAddresses<T>`: Maps `AssetId` to hot wallet address
+- `TreasuryAddresses<T>`: Maps `AssetId` to cold treasury address
+
+
+---
+
+
+### 11.38 Optional & Future Governance Pallets (`bridge-pallet`, `dex-pallet`)
+
+*Note: The following two pallets exist in `runtime/pallets/` (915 lines and 218 lines respectively) as pre-built modules for future governance activation. They are excluded from the core active runtime profile to maintain zero-trust, sequencer-free architecture.*
+
+#### Pallet `bridge-pallet` (⏸️ Optional)
+- **Functional Responsibility**: Legacy wrapped-asset lock/mint bridge interface. Deactivated in favor of LiteVerse DePIN Watcher Mesh & MPC TSS Native Custody. Preserved for optional future sidechain connectivity.
+- **Storage**: `BridgeOperations<T>`, `DailyWithdrawalLimits<T>`
+- **Extrinsics**: `initiate_bridge_transfer`, `fulfill_bridge_transfer`
+
+#### Pallet `dex-pallet` (⏸️ Optional)
+- **Functional Responsibility**: Basic automated market maker (AMM) constant-product liquidity pool interface (`mel-dex`). Deactivated in core spec; decentralized swap functionality is handled natively via multi-VM contracts (Solidity/SVM dApps) running on the MEL bus.
+- **Storage**: `Pool<T>`, `LastOut<T>`
+- **Extrinsics**: `swap(origin, amount_in, min_amount_out)`
+- **MEV Integration**: Implements `MevGuard` trait to prevent front-running during pool swaps.
+
+---
+
 ## Chapter 12: Wire-Format & Binary Serialization Specifications (SCALE, RLP, Borsh, BCS, Wasm)
 
 This chapter defines the normative byte-level serialization rules for all transaction envelopes, cross-VM messages, and VM-native payloads supported by InterLayer. A decoder MUST reject trailing bytes, an invalid discriminant, a non-canonical length, a field above its published bound, or a payload whose declared VM format does not match `vm_type`.
@@ -2199,7 +2324,7 @@ The canonical `MelTx` envelope is serialized as the following SCALE field sequen
 | payload          | C<u32> || bytes       | VM-native calldata or program input      |
 | gas_budget       | u64 LE                | Maximum calibrated gas                   |
 | nonce            | u64 LE                | Sender replay-protection sequence        |
-| chain_id         | u64 LE                | `9999` for the Gravity EVM profile       |
+| chain_id         | u64 LE                | `2021` for the Gravity EVM profile       |
 | vm_version       | u32 LE                | Target adapter compatibility version     |
 | max_fee          | u128 LE               | Maximum fee authorized in base units     |
 | deadline         | u64 LE                | Milliseconds since Unix epoch            |
@@ -2331,7 +2456,9 @@ InterLayer nodes expose a comprehensive JSON-RPC 2.0 API server organized into t
 | `mel_resolveVmAddress` | Resolve a unified address to its VM-specific counterpart |
 | `mel_reverseResolveAddress` | Reverse-resolve a VM address back to its unified address |
 
-### 13.4 Smart Accounts & External Wallet Binding (`mel_*SmartAccount*`, `mel_*Wallet*`)
+### 13.4 Smart Accounts & Standalone Utility API (`mel_*SmartAccount*`, `mel_*Wallet*`, `portal_*`)
+
+*Note: The Portal Dashboard and Block Explorer are standalone web utilities operating outside the core Substrate runtime. The `portal_*` RPC namespace provides helper queries for these external client interfaces.*
 
 | Method | Description |
 | :--- | :--- |
@@ -2402,7 +2529,7 @@ InterLayer nodes expose a comprehensive JSON-RPC 2.0 API server organized into t
 
 | Method | Description |
 | :--- | :--- |
-| `eth_chainId` | Returns the chain ID (9999 for Gravity Testnet) |
+| `eth_chainId` | Returns the chain ID (2021 for Gravity Testnet) |
 | `eth_blockNumber` | Returns the latest block number |
 | `eth_getBalance` | Returns the balance of an EVM address |
 | `eth_getTransactionCount` | Returns the nonce (transaction count) of an address |
@@ -2878,11 +3005,11 @@ enum AgentStatus { Active, Suspended, Deregistered }
 | **Pre-funded Accounts** | 9 (Alice, Bob, Charlie, Dave, Eve, Ferdie + stash accounts + Faucet) |
 | **Faucet Address** | `5EhChakVGF8h9TEL3BVR7Y9YUGxkwb3AsVauH9GqafCpsQBe` |
 | **EVM Chain ID** | Configured via `pallet-evm` genesis |
-| **SS58 Prefix** | Default Substrate (42) |
+| **SS58 Prefix** | InterLayer SS58 Format (106) |
 
 
 **Network Parameters** (Gravity Testnet):
-- **Chain ID**: `9999` (EVM), custom (Substrate)
+- **Chain ID**: `2021` (EVM), custom (Substrate)
 - **Block time target**: ~1 second (10ms poll interval, view-change timeout configurable)
 - **Consensus**: HotStuff 3-chain BFT with `w3f-bls` BLS12-381 signatures
 - **Maximum gas per transaction**: 30,000,000 (configurable via `GasCalibrationConfig`)
