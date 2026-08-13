@@ -1,9 +1,9 @@
-# 📜 InterLayer 2.0: Core Protocol Specification & Technical Architecture
+# InterLayer: Core Protocol Specification & Technical Architecture
 
 **Gravity Testnet Protocol Blueprint & System Architecture Reference**
 
 **Author:** Bharath B R ([@Bharathcoorg](https://forum.polkadot.network/u/Bharathcoorg))
-**Version:** 2.0-TESTNET (Devnet / Testnet Specification)
+**Version:** Gravity Testnet Specification
 **Status:** Active Core Protocol Specification & Technical Architecture — Official Release Edition
 **Repository:** [interlayer-gravity-testnet](https://github.com/Bharathcoorg/interlayer-gravity-testnet)
 
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-This document presents the core protocol specification and technical architecture blueprint for **InterLayer 2.0 (Gravity Testnet)**, a zero-trust, multi-virtual machine Layer-1/Interlayer state transition platform built on Substrate. InterLayer introduces the **Multi-VM Execution Layer (MEL)**, enabling heterogeneous, atomic contract execution across five major Virtual Machine standards—Ethereum Virtual Machine (EVM), Solana Virtual Machine (SVM), PolkaVM (RISC-V), Move VM, and CosmWasm—within a single unified state machine kernel.
+This document presents the core protocol specification and technical architecture blueprint for **InterLayer (Gravity Testnet)**, a zero-trust, multi-virtual machine Layer-1/Interlayer state transition platform built on Substrate. InterLayer introduces the **Multi-VM Execution Layer (MEL)**, enabling heterogeneous, atomic contract execution across five major Virtual Machine standards—Ethereum Virtual Machine (EVM), Solana Virtual Machine (SVM), PolkaVM (RISC-V), Move VM, and CosmWasm—within a single unified state machine kernel.
 
 Rather than relying on traditional wrapped-asset bridge contracts that lock assets on Chain A to mint synthetic tokens on Chain B, InterLayer introduces a native **LiteVerse DePIN Watcher Mesh** paired with **Threshold Multi-Party Computation (MPC TSS)**. Users receive unique per-user, per-chain deposit addresses across Bitcoin, Ethereum, Solana, and external networks; deposits are verified directly into a single unified native balance usable seamlessly across all five internal VM execution environments.
 
@@ -21,7 +21,7 @@ This specification establishes the core architectural design of the global state
 
 ## Document Scope & Conventions
 
-This is a **protocol architecture specification** describing the target system design of InterLayer 2.0 (Gravity Testnet). It serves as the authoritative reference for protocol designers, validators, and developers building on InterLayer.
+This is a **protocol architecture specification** describing the target system design of InterLayer (Gravity Testnet). It serves as the authoritative reference for protocol designers, validators, and developers building on InterLayer.
 
 **Conventions used in this document:**
 - **Rust code blocks** represent either actual production code extracted from the repository or design-target pseudocode illustrating intended data structures and algorithms. When a code block is sourced directly from a specific file, the source is noted in the surrounding text.
@@ -80,7 +80,7 @@ This is a **protocol architecture specification** describing the target system d
 ## Chapter 1: System Overview & Protocol Architecture
 
 ### 1.1 Executive Summary & Historical Context
-The evolution of decentralized smart contract platforms over the past decade has produced an explosion of specialized execution machines. Ethereum introduced the Ethereum Virtual Machine (EVM) in 2015, establishing stack-based, 256-bit word execution with Solidity bytecodes. Solana introduced Sealevel in 2020, leveraging parallel eBPF bytecodes to enable non-overlapping account state concurrency. Polkadot introduced PolkaVM, bringing RISC-V zero-cost abstraction compilation to Web3. Aptos and Sui popularized Diem’s Move VM, emphasizing linear asset resources and formal memory safety. Meanwhile, Cosmos standardized CosmWasm, deploying WebAssembly (Wasm) actor model smart contracts across Tendermint chains.
+The evolution of decentralized smart contract platforms over the past decade has produced an explosion of specialized execution machines. Ethereum introduced the Ethereum Virtual Machine (EVM) in 2015, establishing stack-based, 256-bit word execution with Solidity bytecodes. Solana introduced Sealevel in 2020, leveraging parallel eBPF bytecodes to enable non-overlapping account state concurrency. Polkadot introduced PolkaVM, bringing RISC-V zero-cost abstraction compilation to Web3. Aptos and Sui popularized Diem's Move VM, emphasizing linear asset resources and formal memory safety. Meanwhile, Cosmos standardized CosmWasm, deploying WebAssembly (Wasm) actor model smart contracts across Tendermint chains.
 
 While each virtual machine excels in its native domain, this diversity has created catastrophic execution fragmentation across the Web3 ecosystem. Developers are forced to rebuild smart contracts from scratch in different languages for each ecosystem. Users are trapped in isolated state silos, forced to move assets across third-party wrapped-asset bridges that lock funds on Chain A to mint synthetic tokens on Chain B. Historically, cross-chain bridge hacks have accounted for over $2.8 billion in lost protocol funds, exposing the fundamental structural risk of wrapped-asset messaging bridges.
 
@@ -98,103 +98,7 @@ The design of InterLayer rests upon four foundational architectural principles:
 
 ### 1.3 Minimalist System Architecture Diagram
 
-<svg viewBox="0 0 800 920" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <!-- Header Container -->
-  <rect x="140" y="30" width="520" height="90" rx="16" ry="16" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <path d="M 375 50 L 400 62 L 425 50 L 400 38 Z M 375 62 L 400 74 L 425 62 M 375 74 L 400 86 L 425 74" fill="none" stroke="#111111" stroke-width="2.5" stroke-linejoin="round"/>
-  <text x="400" y="98" font-size="20" font-weight="700" fill="#111111" text-anchor="middle">Substrate Runtime</text>
-  <text x="400" y="112" font-size="13" fill="#555555" text-anchor="middle">Core Blockchain Infrastructure</text>
-
-  <!-- Arrow Down 1 -->
-  <path d="M 400 120 L 400 150" stroke="#111111" stroke-width="2.5"/>
-
-  <!-- MEL Container -->
-  <rect x="40" y="150" width="720" height="150" rx="16" ry="16" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <text x="400" y="180" font-size="20" font-weight="700" fill="#111111" text-anchor="middle">MEL – Multi-VM Execution Layer</text>
-  <text x="400" y="198" font-size="13" fill="#555555" text-anchor="middle">Orchestration  •  Routing  •  Interoperability</text>
-
-  <!-- MEL Pillars -->
-  <line x1="200" y1="215" x2="200" y2="280" stroke="#e0e0e0" stroke-width="1.5"/>
-  <line x1="360" y1="215" x2="360" y2="280" stroke="#e0e0e0" stroke-width="1.5"/>
-  <line x1="540" y1="215" x2="540" y2="280" stroke="#e0e0e0" stroke-width="1.5"/>
-
-  <text x="120" y="240" font-size="15" font-weight="600" fill="#111111" text-anchor="middle">Routing</text>
-  <text x="280" y="240" font-size="15" font-weight="600" fill="#111111" text-anchor="middle">Orchestration</text>
-  <text x="450" y="240" font-size="15" font-weight="600" fill="#111111" text-anchor="middle">Shared Services</text>
-  <text x="640" y="240" font-size="15" font-weight="600" fill="#111111" text-anchor="middle">Interoperability</text>
-
-  <!-- Arrow Down 2 (5 Split Arrows) -->
-  <path d="M 115 300 L 115 340" stroke="#111111" stroke-width="2"/>
-  <path d="M 255 300 L 255 340" stroke="#111111" stroke-width="2"/>
-  <path d="M 400 300 L 400 340" stroke="#111111" stroke-width="2"/>
-  <path d="M 545 300 L 545 340" stroke="#111111" stroke-width="2"/>
-  <path d="M 685 300 L 685 340" stroke="#111111" stroke-width="2"/>
-
-  <!-- 5 VM Boxes -->
-  <!-- EVM -->
-  <rect x="40" y="340" width="130" height="150" rx="14" ry="14" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="105" y="380" font-size="17" font-weight="700" fill="#111111" text-anchor="middle">EVM</text>
-  <text x="105" y="445" font-size="12" fill="#444444" text-anchor="middle">Smart Contracts</text>
-  <text x="105" y="462" font-size="12" fill="#444444" text-anchor="middle">&amp; dApps</text>
-
-  <!-- SVM -->
-  <rect x="190" y="340" width="130" height="150" rx="14" ry="14" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="255" y="380" font-size="17" font-weight="700" fill="#111111" text-anchor="middle">SVM</text>
-  <text x="255" y="445" font-size="12" fill="#444444" text-anchor="middle">Solana Programs</text>
-  <text x="255" y="462" font-size="12" fill="#444444" text-anchor="middle">&amp; dApps</text>
-
-  <!-- Move VM -->
-  <rect x="335" y="340" width="130" height="150" rx="14" ry="14" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="400" y="380" font-size="17" font-weight="700" fill="#111111" text-anchor="middle">Move VM</text>
-  <text x="400" y="445" font-size="12" fill="#444444" text-anchor="middle">Move Contracts</text>
-  <text x="400" y="462" font-size="12" fill="#444444" text-anchor="middle">&amp; dApps</text>
-
-  <!-- CosmWasm -->
-  <rect x="480" y="340" width="130" height="150" rx="14" ry="14" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="545" y="380" font-size="17" font-weight="700" fill="#111111" text-anchor="middle">CosmWasm</text>
-  <text x="545" y="445" font-size="12" fill="#444444" text-anchor="middle">Wasm Contracts</text>
-  <text x="545" y="462" font-size="12" fill="#444444" text-anchor="middle">&amp; dApps</text>
-
-  <!-- PolkaVM -->
-  <rect x="625" y="340" width="130" height="150" rx="14" ry="14" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="690" y="380" font-size="17" font-weight="700" fill="#111111" text-anchor="middle">PolkaVM</text>
-  <text x="690" y="445" font-size="12" fill="#444444" text-anchor="middle">PolkaVM Contracts</text>
-  <text x="690" y="462" font-size="12" fill="#444444" text-anchor="middle">&amp; dApps</text>
-
-  <!-- Arrow Down 3 (5 Merge Arrows) -->
-  <path d="M 115 490 L 115 530 L 400 530 L 400 550" stroke="#111111" stroke-width="2" fill="none"/>
-  <path d="M 255 490 L 255 530" stroke="#111111" stroke-width="2"/>
-  <path d="M 545 490 L 545 530" stroke="#111111" stroke-width="2"/>
-  <path d="M 685 490 L 685 530 L 400 530" stroke="#111111" stroke-width="2" fill="none"/>
-
-  <!-- Shared Runtime Services Container -->
-  <rect x="40" y="550" width="720" height="130" rx="16" ry="16" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <text x="400" y="580" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Shared Runtime Services</text>
-
-  <text x="80" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Accounts</text>
-  <text x="160" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Balances</text>
-  <text x="240" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Identity</text>
-  <text x="320" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Staking</text>
-  <text x="400" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Governance</text>
-  <text x="490" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Messaging</text>
-  <text x="570" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Storage</text>
-  <text x="650" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">Oracles</text>
-  <text x="720" y="630" font-size="13" font-weight="600" fill="#111111" text-anchor="middle">More</text>
-
-  <!-- Arrow Down 4 -->
-  <path d="M 400 680 L 400 720" stroke="#111111" stroke-width="2.5"/>
-
-  <!-- Developer & Ecosystem Layer -->
-  <rect x="40" y="720" width="720" height="140" rx="16" ry="16" fill="#ffffff" stroke="#111111" stroke-width="2.5" stroke-dasharray="6,6"/>
-  <text x="400" y="755" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Built by Developers &amp; Ecosystem</text>
-
-  <text x="95" y="810" font-size="14" font-weight="600" fill="#111111" text-anchor="middle">dApps</text>
-  <text x="210" y="810" font-size="14" font-weight="600" fill="#111111" text-anchor="middle">Bridge Builders</text>
-  <text x="345" y="810" font-size="14" font-weight="600" fill="#111111" text-anchor="middle">Liquidity Providers</text>
-  <text x="475" y="810" font-size="14" font-weight="600" fill="#111111" text-anchor="middle">Institutions</text>
-  <text x="590" y="810" font-size="14" font-weight="600" fill="#111111" text-anchor="middle">Agents / Bots</text>
-  <text x="695" y="810" font-size="14" font-weight="600" fill="#111111" text-anchor="middle">Users</text>
-</svg>
+![Figure: InterLayer System Architecture — Substrate Runtime, MEL Multi-VM Execution Layer, five VM adapters, shared runtime services, and developer ecosystem.](images/mel_architecture.png)
 
 ---
 
@@ -292,24 +196,24 @@ fn execute_block(prev_state: GlobalState, block: Block) -> GlobalState {
 
 <svg viewBox="0 0 800 420" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <rect x="40" y="30" width="720" height="360" rx="16" ry="16" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <text x="400" y="65" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Global State Tuple σ Structure &amp; Merkle Root H(σ)</text>
+  <text x="400" y="65" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Global State Tuple State Structure &amp; Merkle Root H(State)</text>
   <line x1="60" y1="85" x2="740" y2="85" stroke="#e0e0e0" stroke-width="1.5"/>
 
   <!-- Substates -->
   <rect x="60" y="110" width="150" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="135" y="140" font-size="14" font-weight="600" text-anchor="middle">Σ_EVM</text>
+  <text x="135" y="140" font-size="14" font-weight="600" text-anchor="middle">EVM State</text>
   <text x="135" y="160" font-size="11" fill="#666666" text-anchor="middle">revm Account Storage</text>
 
   <rect x="225" y="110" width="150" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="300" y="140" font-size="14" font-weight="600" text-anchor="middle">Σ_SVM</text>
+  <text x="300" y="140" font-size="14" font-weight="600" text-anchor="middle">SVM State</text>
   <text x="300" y="160" font-size="11" fill="#666666" text-anchor="middle">Solana Account Vectors</text>
 
   <rect x="390" y="110" width="150" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="465" y="140" font-size="14" font-weight="600" text-anchor="middle">Σ_PolkaVM</text>
+  <text x="465" y="140" font-size="14" font-weight="600" text-anchor="middle">PolkaVM State</text>
   <text x="465" y="160" font-size="11" fill="#666666" text-anchor="middle">RISC-V Contract State</text>
 
   <rect x="555" y="110" width="180" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="645" y="140" font-size="14" font-weight="600" text-anchor="middle">Σ_Move &amp; Σ_CosmWasm</text>
+  <text x="645" y="140" font-size="14" font-weight="600" text-anchor="middle">Move & CosmWasm State</text>
   <text x="645" y="160" font-size="11" fill="#666666" text-anchor="middle">Resources &amp; Wasmi Store</text>
 
   <!-- Merkle Combine Arrows -->
@@ -322,7 +226,7 @@ fn execute_block(prev_state: GlobalState, block: Block) -> GlobalState {
 
   <!-- Merkle Root Box -->
   <rect x="250" y="260" width="300" height="90" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="400" y="295" font-size="16" font-weight="700" text-anchor="middle">Blake2b-256 State Root H(σ)</text>
+  <text x="400" y="295" font-size="16" font-weight="700" text-anchor="middle">Blake2b-256 State Root H(State)</text>
   <text x="400" y="325" font-size="12" fill="#555555" text-anchor="middle">Committed in Substrate Block Header</text>
 </svg>
 
@@ -343,54 +247,7 @@ MEL resolves this by providing a unified meta-execution layer. When an **Atomic 
 
 ### 3.2 Atomic Execution Flowchart
 
-<svg viewBox="0 0 800 480" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <text x="400" y="35" font-size="20" font-weight="700" fill="#111111" text-anchor="middle">MEL Atomic Execution &amp; Rollback Flowchart</text>
-
-  <!-- Step 1: Input Bundle -->
-  <rect x="40" y="60" width="150" height="100" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="115" y="95" font-size="14" font-weight="700" text-anchor="middle">Phase 1: Validate</text>
-  <text x="115" y="118" font-size="11" fill="#444444" text-anchor="middle">Check deadline &amp;</text>
-  <text x="115" y="133" font-size="11" fill="#444444" text-anchor="middle">Create Snapshot S_0</text>
-
-  <path d="M 190 110 L 230 110" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 2: Source Execution -->
-  <rect x="230" y="60" width="160" height="100" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="310" y="95" font-size="14" font-weight="700" text-anchor="middle">Phase 2: Source VM</text>
-  <text x="310" y="118" font-size="11" fill="#444444" text-anchor="middle">Execute Call C_1</text>
-  <text x="310" y="133" font-size="11" fill="#444444" text-anchor="middle">Stage State Diff</text>
-
-  <path d="M 390 110 L 430 110" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 3: Target Execution -->
-  <rect x="430" y="60" width="160" height="100" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="510" y="95" font-size="14" font-weight="700" text-anchor="middle">Phase 3: Target VM</text>
-  <text x="510" y="118" font-size="11" fill="#444444" text-anchor="middle">Execute Call C_2</text>
-  <text x="510" y="133" font-size="11" fill="#444444" text-anchor="middle">Stage State Diff</text>
-
-  <path d="M 590 110 L 630 110" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 4: Decision -->
-  <rect x="630" y="60" width="130" height="100" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="695" y="95" font-size="14" font-weight="700" text-anchor="middle">All Succeeded?</text>
-  <text x="695" y="125" font-size="12" fill="#444444" text-anchor="middle">Status ε_i == Ø?</text>
-
-  <!-- Success Branch -->
-  <path d="M 695 160 L 695 240 L 510 240 L 510 270" fill="none" stroke="#111111" stroke-width="2"/>
-  <text x="630" y="230" font-size="12" font-weight="700" fill="#111111">YES (Commit)</text>
-
-  <rect x="430" y="270" width="160" height="90" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="510" y="305" font-size="14" font-weight="700" text-anchor="middle">Commit State σ_N</text>
-  <text x="510" y="330" font-size="11" fill="#444444" text-anchor="middle">Write Diffs to Storage</text>
-
-  <!-- Rollback Branch -->
-  <path d="M 695 160 L 695 315 L 270 315 L 270 270" fill="none" stroke="#111111" stroke-width="2"/>
-  <text x="600" y="305" font-size="12" font-weight="700" fill="#111111">NO (Revert)</text>
-
-  <rect x="190" y="270" width="160" height="90" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="270" y="305" font-size="14" font-weight="700" text-anchor="middle">Rollback R(σ_i, S_0)</text>
-  <text x="270" y="330" font-size="11" fill="#444444" text-anchor="middle">Restore State σ_0</text>
-</svg>
+![Figure: Atomic Cross-VM Execution Flow — Snapshot, Execute, Validate, Commit/Rollback phases across EVM, SVM, PolkaVM, Move, and CosmWasm.](images/atomic_execution_flow.png)
 
 ![Figure 2: Atomic Cross-VM Execution Flow  The 5-phase pipeline showing snapshot creation, source VM execution, target VM execution, validation, and commit/rollback branching.](images/atomic_execution_flow.png)
 
@@ -532,11 +389,11 @@ A mapping is valid only while its handle, ownership proof, domain, and address-f
 ### 4.2 Unified Address Resolution Diagram
 
 <svg viewBox="0 0 800 360" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <text x="400" y="35" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Unified Address Bijection f_map Mapping</text>
+  <text x="400" y="35" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Unified Address Bijection Address Mapping</text>
 
   <!-- Central Unified Address -->
   <rect x="250" y="60" width="300" height="60" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <text x="400" y="88" font-size="15" font-weight="700" text-anchor="middle">a_unified ∈ B^32 (32-byte Key)</text>
+  <text x="400" y="88" font-size="15" font-weight="700" text-anchor="middle">Unified Address (32-byte Key)</text>
   <text x="400" y="106" font-size="11" fill="#555555" text-anchor="middle">Canonical User Identity</text>
 
   <!-- Arrows to 5 VM Formats -->
@@ -727,6 +584,41 @@ Gas fees paid in non-IL tokens are automatically converted at the current oracle
 
 ---
 
+
+### 4.8 Programmable Wallet Architecture (`pallet-smart-accounts`)
+
+InterLayer implements a **Programmable Wallet** system via `pallet-smart-accounts` (774 lines), enabling users to control on-chain assets from any external wallet ecosystem without creating a new keypair:
+
+```rust
+struct SmartAccount {
+    account_type: u8,         // 0 = Internal (native), 1 = External (bound wallet)
+    last_wallet_change: u32,  // Block number of last wallet binding change
+}
+
+enum VmType { EVM, SVM, PolkaVM, Move, Cosmos }
+```
+
+**Core Capabilities:**
+
+| Feature | Description |
+| :--- | :--- |
+| **External Wallet Binding** | Users bind MetaMask, Solflare, polkadot.js, or Ton Connect wallets via signature challenge (EIP-191 for EVM, Ed25519 for Solana/TON, Sr25519 for Polkadot) |
+| **Invisible Wallets** | On-chain subaccounts controlled by external wallet bindings — users interact with InterLayer using their existing wallet without a new seed phrase |
+| **Portal Call Execution** | External wallets can execute filtered runtime calls through the Portal smart-account path (`PortalCallFilter`) |
+| **Cooldown Protection** | Wallet binding changes require a cooldown period (`WalletChangeCooldown`) to prevent rapid unauthorized changes |
+| **Nonce Replay Protection** | Each binding and execution has independent nonce tracking (`BindingNonces`, `ExecutionNonces`) |
+
+**Storage Layout:**
+- `SmartAccounts<T>`: Maps `AccountId` to `SmartAccount` metadata
+- `ExternalBindings<T>`: Maps `(VmType, ExternalAddress)` to internal `AccountId`
+- `BindingNonces<T>`: Nonce counter per account for wallet binding operations
+- `ExecutionNonces<T>`: Nonce counter per account for Portal call execution
+
+**Extrinsics:** `create_smart_account`, `bind_external_wallet`, `unbind_external_wallet`, `execute_portal_call`
+
+
+---
+
 ## Chapter 5: LiteVerse DePIN Watcher Mesh & Liquidity Orchestration
 
 ### 5.1 Three-Layer Liquidity & Custody Architecture
@@ -776,118 +668,7 @@ Deposit finalization from external chains requires minimum confirmation depths t
 
 ### 5.2 Liquidity Inflow & Outflow Flowchart
 
-<svg viewBox="0 0 800 720" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <!-- Section 1: Liquidity Inflow -->
-  <text x="400" y="35" font-size="20" font-weight="700" fill="#111111" text-anchor="middle">Liquidity Inflow (Deposit)</text>
-
-  <!-- Step 1: User -->
-  <rect x="20" y="60" width="120" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="80" y="88" font-size="14" font-weight="700" fill="#111111" text-anchor="middle">1. User</text>
-  <text x="80" y="130" font-size="11" fill="#444444" text-anchor="middle">User wants to</text>
-  <text x="80" y="145" font-size="11" fill="#444444" text-anchor="middle">deposit assets</text>
-
-  <path d="M 140 115 L 170 115" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 2: External Chains -->
-  <rect x="170" y="60" width="130" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="235" y="88" font-size="14" font-weight="700" fill="#111111" text-anchor="middle">2. External Chains</text>
-  <text x="235" y="130" font-size="11" fill="#444444" text-anchor="middle">BTC / ETH / SOL</text>
-  <text x="235" y="145" font-size="11" fill="#444444" text-anchor="middle">and more</text>
-
-  <path d="M 300 115 L 330 115" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 3: Deposit Addr -->
-  <rect x="330" y="60" width="140" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="400" y="82" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">3. Unique Deposit</text>
-  <text x="400" y="98" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">Address</text>
-  <text x="400" y="130" font-size="11" fill="#444444" text-anchor="middle">System provides unique</text>
-  <text x="400" y="145" font-size="11" fill="#444444" text-anchor="middle">address (per user)</text>
-
-  <path d="M 470 115 L 500 115" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 4: Verification -->
-  <rect x="500" y="60" width="130" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="565" y="88" font-size="14" font-weight="700" fill="#111111" text-anchor="middle">4. Verification</text>
-  <text x="565" y="130" font-size="11" fill="#444444" text-anchor="middle">LiteVerse watchers</text>
-  <text x="565" y="145" font-size="11" fill="#444444" text-anchor="middle">verify deposit</text>
-
-  <path d="M 630 115 L 660 115" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 5: Unified Balance -->
-  <rect x="660" y="60" width="120" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="720" y="82" font-size="12" font-weight="700" fill="#111111" text-anchor="middle">5. Unified Balance</text>
-  <text x="720" y="98" font-size="12" font-weight="700" fill="#111111" text-anchor="middle">on InterLayer</text>
-  <text x="720" y="130" font-size="10" fill="#444444" text-anchor="middle">Credited to user's</text>
-  <text x="720" y="145" font-size="10" fill="#444444" text-anchor="middle">unified balance</text>
-
-  <!-- Usable Across Internal VMs box -->
-  <path d="M 720 170 L 720 200 L 400 200 L 400 210" fill="none" stroke="#111111" stroke-width="2"/>
-
-  <rect x="150" y="210" width="500" height="60" rx="10" ry="10" fill="#ffffff" stroke="#111111" stroke-width="1.5" stroke-dasharray="4,4"/>
-  <text x="400" y="228" font-size="12" font-weight="700" fill="#111111" text-anchor="middle">Usable Across All Internal VMs</text>
-
-  <rect x="175" y="235" width="70" height="25" rx="5" fill="#ffffff" stroke="#111111" stroke-width="1"/>
-  <text x="210" y="252" font-size="11" font-weight="600" text-anchor="middle">EVM</text>
-
-  <rect x="265" y="235" width="70" height="25" rx="5" fill="#ffffff" stroke="#111111" stroke-width="1"/>
-  <text x="300" y="252" font-size="11" font-weight="600" text-anchor="middle">SVM</text>
-
-  <rect x="355" y="235" width="85" height="25" rx="5" fill="#ffffff" stroke="#111111" stroke-width="1"/>
-  <text x="397" y="252" font-size="11" font-weight="600" text-anchor="middle">Move VM</text>
-
-  <rect x="450" y="235" width="90" height="25" rx="5" fill="#ffffff" stroke="#111111" stroke-width="1"/>
-  <text x="495" y="252" font-size="11" font-weight="600" text-anchor="middle">CosmWasm</text>
-
-  <rect x="550" y="235" width="80" height="25" rx="5" fill="#ffffff" stroke="#111111" stroke-width="1"/>
-  <text x="590" y="252" font-size="11" font-weight="600" text-anchor="middle">PolkaVM</text>
-
-  <!-- Divider Line -->
-  <line x1="20" y1="300" x2="780" y2="300" stroke="#cccccc" stroke-width="1.5"/>
-
-  <!-- Section 2: Liquidity Outflow -->
-  <text x="400" y="340" font-size="20" font-weight="700" fill="#111111" text-anchor="middle">Liquidity Outflow (Withdrawal)</text>
-
-  <!-- Step 1: User Request -->
-  <rect x="40" y="370" width="150" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="115" y="400" font-size="14" font-weight="700" fill="#111111" text-anchor="middle">1. User</text>
-  <text x="115" y="440" font-size="11" fill="#444444" text-anchor="middle">User requests</text>
-  <text x="115" y="455" font-size="11" fill="#444444" text-anchor="middle">withdrawal</text>
-
-  <path d="M 190 425 L 220 425" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 2: Request Processed -->
-  <rect x="220" y="370" width="160" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="300" y="400" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">2. Request Processed</text>
-  <text x="300" y="440" font-size="11" fill="#444444" text-anchor="middle">InterLayer processes</text>
-  <text x="300" y="455" font-size="11" fill="#444444" text-anchor="middle">the withdrawal</text>
-
-  <path d="M 380 425 L 410 425" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 3: Validators + MPC -->
-  <rect x="410" y="370" width="170" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="495" y="400" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">3. Validators + MPC</text>
-  <text x="495" y="440" font-size="11" fill="#444444" text-anchor="middle">Validators approve and</text>
-  <text x="495" y="455" font-size="11" fill="#444444" text-anchor="middle">MPC signs transaction</text>
-
-  <path d="M 580 425 L 610 425" stroke="#111111" stroke-width="2"/>
-
-  <!-- Step 4: Assets Released -->
-  <rect x="610" y="370" width="150" height="110" rx="12" ry="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="685" y="400" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">4. Assets Released</text>
-  <text x="685" y="440" font-size="11" fill="#444444" text-anchor="middle">Assets sent to user's</text>
-  <text x="685" y="455" font-size="11" fill="#444444" text-anchor="middle">external address</text>
-
-  <!-- Comparison Box -->
-  <rect x="40" y="520" width="720" height="90" rx="14" ry="14" fill="#ffffff" stroke="#111111" stroke-width="1.5" stroke-dasharray="4,4"/>
-
-  <text x="220" y="550" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">Traditional Bridge:</text>
-  <text x="220" y="575" font-size="12" fill="#555555" text-anchor="middle">Lock on Chain A  →  Mint Wrapped on Chain B</text>
-
-  <line x1="400" y1="535" x2="400" y2="595" stroke="#e0e0e0" stroke-width="1.5"/>
-
-  <text x="580" y="550" font-size="13" font-weight="700" fill="#111111" text-anchor="middle">InterLayer Approach:</text>
-  <text x="580" y="575" font-size="12" fill="#555555" text-anchor="middle">Deposit to Unique Address  →  Verify  →  Unified Balance</text>
-</svg>
+![Figure: Liquidity Inflow and Outflow — User deposit flow through external chains, unique deposit addresses, LiteVerse verification, and unified balance. Withdrawal flow through validators and MPC threshold signing.](images/liquidity_flow.png)
 
 ### 5.3 Implementation: `liteverse-pallet` Architecture
 
@@ -1500,6 +1281,51 @@ For deposit-address allocation, the protocol derives child *public keys* from an
 and the chain code is c_i=I_R. Each signer derives the corresponding additive share locally, , so no process learns the group scalar. Invalid tweaks and the point at infinity are rejected. Hardened derivation is permitted only through an explicit distributed derivation protocol; it MUST NOT be implemented by collecting key shares at a coordinator.
 
 The allocated path binds the environment, external chain, account, and user index. The testnet profile reserves the BIP-44 coin-type path `m/44'/9999'/chain'/account'/0/i`; the exact `chain` and `account` components are recorded with the deposit-address allocation and signed into the withdrawal request.
+
+---
+
+
+### 8.3 CEX-Style MPC Address Derivation (`hd_wallet`)
+
+InterLayer's MPC infrastructure provides **CEX-style deterministic address derivation**, generating unique per-user deposit addresses on every supported external chain — similar to how centralized exchanges (Binance, Coinbase) assign deposit addresses, but fully decentralized via threshold MPC:
+
+```rust
+enum AddressType {
+    Bitcoin,    // BIP-44 secp256k1 → Bech32 (bc1...)
+    Ethereum,   // secp256k1 → Keccak-256 → 0x...
+    Solana,     // Ed25519 → Base58 address
+    Polkadot,   // Ed25519 → SS58 address
+}
+
+struct DerivedAddress {
+    address: String,       // Chain-native address string
+    derived_pubkey: Vec<u8>, // Verification key material
+}
+
+fn derive_address(
+    key_share: &KeyShare,   // MPC participant's key share
+    address_type: AddressType,
+    index: u32,             // Per-user unique index
+) -> Result<String>;
+```
+
+**How It Works:**
+
+1. **Distributed Key Generation (DKG)**: MPC nodes collectively generate a group public key without any single node holding the full private key.
+2. **Per-User Derivation**: For each user and each external chain, `derive_address(key_share, chain, user_index)` produces a unique deposit address using HD-wallet-style key derivation (HMAC-SHA512 with chain-specific domain separators: `b"btc"`, `b"eth"`, `b"sol"`, `b"dot"`).
+3. **Chain-Specific Encoding**: Bitcoin addresses use `secp256k1 → RIPEMD-160(SHA-256(pubkey)) → Bech32`; Ethereum uses `secp256k1 → Keccak-256 → 0x` prefix; Solana uses `Ed25519 → Base58`; Polkadot uses `Ed25519 → SS58`.
+4. **Verification**: The runtime validates the derived address against the verification key material before accepting it as an active custody endpoint.
+
+**External Chain Interaction Flow:**
+
+| Action | Flow |
+| :--- | :--- |
+| **Deposit** | User sends BTC/ETH/SOL to their unique MPC-derived address → LiteVerse watchers detect and verify → Runtime credits unified IL balance |
+| **Withdrawal** | User requests withdrawal → Validators approve → MPC nodes threshold-sign the external chain transaction → `mpc-executor` broadcasts to chain RPC (`rpc.sepolia.org`, `api.devnet.solana.com`, `bitcoin-testnet.drpc.org`) |
+| **Cross-Chain Control** | InterLayer can initiate transactions on any external chain by constructing and threshold-signing native transactions — no bridge contracts or wrapped tokens needed |
+
+This architecture gives InterLayer **full programmatic control over external chain assets** — the protocol can send, receive, and manage BTC, ETH, SOL, and DOT natively, exactly like a centralized exchange, but with decentralized custody via threshold MPC.
+
 
 ---
 
@@ -2948,7 +2774,15 @@ executeCrossVmWorkflow();
 
 ### 14.7 InterClaw Autonomous Agent Framework (`pallet-agent`)
 
-InterLayer includes a native on-chain autonomous agent execution framework (`pallet-agent`, 1,743 lines), enabling AI agents to operate as first-class network participants:
+InterLayer includes a native on-chain autonomous agent execution framework (`pallet-agent`, 1,743 lines), enabling AI agents to operate as first-class network participants. This is not a simple smart contract — it is a full **autonomous execution runtime** where AI agents can:
+
+- **Register as on-chain service providers** with staking bonds and declared capabilities
+- **Receive and execute user intents** — natural language or structured task descriptions
+- **Access encrypted user state** via LiteVerse Data Availability (DA) manifests
+- **Earn revenue** through a protocol-defined fee split (60% operator, 25% protocol, 15% LiteVerse)
+- **Build reputation** through verified execution history (on-chain trust scoring)
+
+**Key Design:**
 
 ```rust
 struct AgentRegistration {
@@ -3629,7 +3463,7 @@ The `AtomicContextValidator::validate_comprehensive()` method enforces the follo
 
 ---
 
-*End of InterLayer 2.0: Core Protocol Specification & Technical Architecture — Gravity Testnet*
+*End of InterLayer: Core Protocol Specification & Technical Architecture — Gravity Testnet*
 *Authored by Bharath B R ([@Bharathcoorg](https://forum.polkadot.network/u/Bharathcoorg))*
 *Publication Date: August 2026*
-*Revision: 2.0-TECHNICAL-ARCHITECTURE-v4*
+*Revision: TECHNICAL-ARCHITECTURE-RELEASE*
