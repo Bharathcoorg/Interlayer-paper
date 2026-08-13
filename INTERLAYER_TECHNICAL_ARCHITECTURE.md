@@ -97,13 +97,7 @@ The design of InterLayer rests upon four foundational architectural principles:
 3. **Atomic Cross-VM Bundles**: Developers can assemble an atomic transaction bundle containing contract calls to multiple distinct VMs (for example, executing an EVM swap followed by a Solana program instruction in a single block). If any call fails, the entire atomic bundle rolls back cleanly without state corruption.
 4. **Native Unique Deposit Addresses via LiteVerse DePIN & MPC TSS**: Users do not hold wrapped synthetic tokens. Every user is allocated unique per-user, per-chain deposit addresses on Bitcoin, Ethereum, Solana, and external networks. Deposits are monitored by the LiteVerse DePIN Watcher Mesh and signed by an off-chain Threshold Multi-Party Computation (MPC TSS) validator network, crediting a single unified native balance directly usable across all internal VMs.
 
-### 1.3 Minimalist System Architecture Diagram
-
-
----
-
-
-### 1.4 Network Participant Roles
+### 1.3 Network Participant Roles
 
 InterLayer defines four distinct network participant classes, each with dedicated responsibilities and reward streams:
 
@@ -194,12 +188,15 @@ fn execute_block(prev_state: GlobalState, block: Block) -> GlobalState {
 
 ### 2.4 State Space Vector Diagram
 
+The global state tuple $S = (B, A, V, X, P)$ unifies block-level metadata, multi-VM account storage, cross-VM staging buffers, and protocol governance parameters beneath a singular cryptographic root:
+
+![Figure 1: Global State Tuple & Merkle Root Structure — Unifying block metadata, account state, VM states (EVM/SVM/PolkaVM/Move/CosmWasm), cross-VM execution queues, and protocol parameters into the Blake2b-256 state root.](images/state_space_vector_diagram.png)
 
 ---
 
 ## Chapter 3: Multi-VM Execution Layer (MEL) Engine Architecture
 
-![Figure 1: MEL Multi-VM Architecture  The five execution adapters (EVM, SVM, PolkaVM, Move, CosmWasm) connected through the unified MEL orchestration layer to the shared Substrate state trie.](images/mel_architecture.png)
+![Figure 2: MEL Multi-VM Architecture  The five execution adapters (EVM, SVM, PolkaVM, Move, CosmWasm) connected through the unified MEL orchestration layer to the shared Substrate state trie.](images/mel_architecture.png)
 
 ### 3.1 Intuitive Explanation of Multi-VM Atomic Execution
 In traditional single-VM networks (like Ethereum or Solana), smart contract execution is constrained to a single execution environment. If a dApp requires logic across Solidity (EVM) and Solana (SVM), the user must perform two asynchronous transactions connected through an external cross-chain messaging bridge. This introduces multi-block latency, bridge fee overhead, and severe vulnerability to front-running and bridge exploits.
@@ -212,7 +209,7 @@ MEL resolves this by providing a unified meta-execution layer. When an **Atomic 
 
 ### 3.2 Atomic Execution Flowchart
 
-![Figure 2: Atomic Cross-VM Execution Flow  The 5-phase pipeline showing snapshot creation, source VM execution, target VM execution, validation, and commit/rollback branching.](images/atomic_execution_flow.png)
+![Figure 3: Atomic Cross-VM Execution Flow  The 5-phase pipeline showing snapshot creation, source VM execution, target VM execution, validation, and commit/rollback branching.](images/atomic_execution_flow.png)
 
 ### 3.3 Atomic Bundle Execution Engine
 An **Atomic Bundle** contains a vector of contract operations across arbitrary VM types:
@@ -351,8 +348,13 @@ A mapping is valid only while its handle, ownership proof, domain, and address-f
 
 ### 4.2 Unified Address Resolution Diagram
 
+Human-readable handles registered in `pallet-handles` and `unified-address-registry` provide deterministic 1-to-1 bijective address mappings across all connected execution environments:
 
-### 4.5 Balance Conservation Invariant
+![Figure 4: Unified Address Resolution — resolve_address() Bijection Mapping from human-readable handle to EVM, SVM, PolkaVM, Bitcoin, TON, and Move VM addresses.](images/unified_address_resolution_diagram.png)
+
+---
+
+### 4.3 Balance Conservation Invariant
 For any unified address `a`, let `balance(a, k)` denote native `IL` tokens held within sub-state `k`. Global balance conservation requires that the sum of all balances across all sub-states plus the treasury reserve equals the total token supply at all times. No transaction or atomic bundle may create or destroy tokens — only transfer them between sub-states.
 
 ### 4.6 Implementation: `unified-address-registry` Pallet
@@ -631,7 +633,7 @@ Deposit finalization from external chains requires minimum confirmation depths t
 
 ### 5.2 Liquidity Inflow & Outflow Flowchart
 
-![Figure 3: Liquidity Inflow and Outflow — User deposit flow through external chains, unique deposit addresses, LiteVerse verification, and unified balance. Withdrawal flow through validators and MPC threshold signing.](images/liquidity_flow.png)
+![Figure 5: Liquidity Inflow and Outflow — User deposit flow through external chains, unique deposit addresses, LiteVerse verification, and unified balance. Withdrawal flow through validators and MPC threshold signing.](images/liquidity_flow.png)
 
 ### 5.3 Implementation: `liteverse-pallet` Architecture
 
@@ -1147,7 +1149,7 @@ The Wasm runtime environment provides host imports that CosmWasm contracts can c
 
 ## Chapter 8: Off-Chain Threshold MPC Signer Infrastructure (TSS)
 
-![Figure 4: Threshold MPC Signing Process  Subset of t participants generate partial signatures using Lagrange interpolation, aggregated into a single threshold signature verified against the group public key.](images/mpc_threshold_signing.png)
+![Figure 6: Threshold MPC Signing Process  Subset of t participants generate partial signatures using Lagrange interpolation, aggregated into a single threshold signature verified against the group public key.](images/mpc_threshold_signing.png)
 
 This chapter details the off-chain Multi-Party Computation (MPC) threshold signing infrastructure implemented in the `mpc-executor` crate. The MPC signer network enables InterLayer to authorize cross-chain transactions (withdrawals, bridge operations) without any single entity holding a complete private key.
 
@@ -2924,15 +2926,12 @@ enum AgentStatus { Active, Suspended, Deregistered }
 
 | Figure | Description | Location |
 | :--- | :--- | :--- |
-| **Figure 1** | MEL Multi-VM Architecture — 5 execution adapters connected through unified orchestration layer | Chapter 3, after §3.1 heading |
-| **Figure 2** | Atomic Cross-VM Execution Flow — 5-phase pipeline with commit/rollback branching | Chapter 3, after §3.2 SVG |
-| **Figure 3** | Threshold MPC Signing Process — Lagrange interpolation aggregation flow | Chapter 8, after heading |
-| **SVG 1** | Multi-VM Execution Layer Architecture (inline SVG) | Chapter 1, §1.3 |
-| **SVG 2** | Global State Tuple `state` Structure & Merkle Root  | Chapter 2, §2.4 |
-| **SVG 3** | Atomic Execution Pipeline with Commit/Rollback | Chapter 3, §3.2 |
-| **SVG 4** | Unified Address Bijection `resolve_address()` Mapping | Chapter 4, §4.2 |
-| **SVG 5** | Liquidity Inflow/Outflow Flowchart | Chapter 5, §5.2 |
-| **SVG 6** | HotStuff Pipelined Consensus Phases | Chapter 6, §6.1 |
+| **Figure 1** | Global State Tuple & Merkle Root Structure — State decomposition $(B, A, V, X, P)$ | Chapter 2, §2.4 |
+| **Figure 2** | MEL Multi-VM Architecture — 5 execution adapters connected through unified orchestration layer | Chapter 3, §3.1 |
+| **Figure 3** | Atomic Cross-VM Execution Flow — 5-phase pipeline with commit/rollback branching | Chapter 3, §3.2 |
+| **Figure 4** | Unified Address Resolution — `resolve_address()` bijection mapping across 6 domains | Chapter 4, §4.2 |
+| **Figure 5** | Liquidity Inflow & Outflow — Three-layer custody, DePIN watchers, and MPC threshold signing | Chapter 5, §5.2 |
+| **Figure 6** | Threshold MPC Signing Process — Distributed Key Generation, partial signatures, and Lagrange aggregation | Chapter 8, §8.2 |
 
 ---
 
