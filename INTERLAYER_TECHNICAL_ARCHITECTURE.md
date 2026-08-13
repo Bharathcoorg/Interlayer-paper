@@ -334,7 +334,7 @@ InterLayer introduces a **Dual-Mode Address Architecture** designed to bridge na
 ### 4.2 Universal Handle System (`@username`)
 
 To simplify user interaction, `unified-address-registry` provides an on-chain **Universal Handle System**:
-- Users register human-readable handles (e.g., `@alice`) via `mel_registerHandle`.
+- Users register human-readable handles (e.g., `alice`) via `mel_registerHandle`.
 - **Name Normalization**: Handles are automatically lowercased, stripped of trailing whitespace, and checked for character uniqueness to prevent spoofing and homograph attacks.
 - **Replay Protection**: Each address binding increments a deterministic binding nonce, preventing signature replay across chains or VM instances.
 
@@ -346,11 +346,28 @@ A global bijection from 32-byte unified identifiers to a 20-byte EVM address spa
 
 A mapping is valid only while its handle, ownership proof, domain, and address-format checks remain active on-chain.
 
-### 4.2 Unified Address Resolution Diagram
+### 4.2 Unified Address Resolution & Dual-Layer Binding Architecture
 
-Human-readable handles registered in `pallet-handles` and `unified-address-registry` provide deterministic 1-to-1 bijective address mappings across all connected execution environments:
+InterLayer unifies on-chain identity through a **Dual-Layer Address Architecture** managed jointly by `pallet-handles` and `unified-address-registry`:
 
-![Figure 4: Unified Address Resolution — resolve_address() Bijection Mapping from human-readable handle to EVM, SVM, PolkaVM, Bitcoin, TON, and Move VM addresses.](images/unified_address_resolution_diagram.png)
+1. **Layer 1 — Internal Multi-VM State Bindings (`pallet-handles` / `CustomVMAddresses`)**:
+   Within the InterLayer Substrate runtime, a single registered handle (e.g., `alice`) is deterministically bound across all 5 embedded virtual machine environments:
+   - **Native Substrate**: 32-byte SS58 Account ID (SS58 Prefix 106, e.g. `5EhChakVGF8h...`)
+   - **EVM Sub-state**: 20-byte H160 Ethereum address (`0x742d35Cc...`)
+   - **SVM Sub-state**: 32-byte Ed25519 Solana public key (Base58, e.g. `4uQeVj5t...`)
+   - **PolkaVM Sub-state**: 32-byte RISC-V account identifier (`5GrwvaEF...`)
+   - **Move VM Sub-state**: 32-byte resource address (`0x1::interlayer::alice`)
+   - **CosmWasm Sub-state**: WebAssembly actor model account identifier
+
+2. **Layer 2 — External Chain Mappings (`unified-address-registry` / `AddressMappings`)**:
+   For cross-network interoperability, the handle resolves to unique, per-user external deposit addresses derived off-chain via Threshold Multi-Party Computation (MPC TSS):
+   - `alice@btc` &rarr; Bitcoin SegWit / Taproot deposit address (`bc1q9h4s...`)
+   - `alice@eth` &rarr; Ethereum L1 native deposit address (`0x742d35Cc...`)
+   - `alice@sol` &rarr; Solana L1 native deposit address (`4uQeVj5t...`)
+   - `alice@dot` &rarr; Polkadot Relay Chain deposit address (`15oF4uVJ...`)
+   - `alice@ton` &rarr; TON Blockchain deposit address (`EQD4FPq2...`)
+
+![Figure 4: Unified Address Resolution — Dual-Layer Binding across Internal Multi-VM Sub-states and External Chain Mapped Addresses (MPC TSS Derivation).](images/unified_address_resolution_diagram.png)
 
 ---
 
@@ -1690,7 +1707,7 @@ Call indices are part of the testnet compatibility surface. A runtime upgrade ma
 
 ### 11.10 Pallet `handles`
 
-**Functional Responsibility**: Manages human-readable handle handles (e.g., `@bharath`) bound to multi-chain addresses. Handles support expiration, renewal, and auction-based namespace claims.
+**Functional Responsibility**: Manages human-readable handle handles (e.g., `bharath`) bound to multi-chain addresses. Handles support expiration, renewal, and auction-based namespace claims.
 
 **Storage Items**:
 - `HandlesMap<T>: StorageMap<Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, HandleInfo>`  Handle metadata, owner, expiration block.
@@ -2052,7 +2069,7 @@ Call indices are part of the testnet compatibility surface. A runtime upgrade ma
 
 ### 11.32 Pallet `unified-address-registry`
 
-**Functional Responsibility**: Maps human-readable handles (e.g., `@bharath`) to native VM addresses across EVM, SVM, PolkaVM, Move, CosmWasm, and Substrate.
+**Functional Responsibility**: Maps human-readable handles (e.g., `bharath`) to native VM addresses across EVM, SVM, PolkaVM, Move, CosmWasm, and Substrate.
 
 **Storage Items**:
 - `HandleRegistrations<T>: StorageMap<Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, HandleRegistration>`  Registered handles.
