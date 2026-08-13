@@ -2,7 +2,7 @@
 
 **Gravity Testnet Protocol Blueprint & System Architecture Reference**
 
-**Author:** Bharath B R ([@Bharathcoorg](https://forum.polkadot.network/u/Bharathcoorg))
+**Author:** Bharath B R ([@bharathcoorg7](https://x.com/bharathcoorg7))
 **Version:** Gravity Testnet Specification
 **Status:** Active Core Protocol Specification & Technical Architecture — Official Release Edition
 **Repository:** [interlayer-gravity-testnet](https://github.com/Bharathcoorg/interlayer-gravity-testnet)
@@ -194,41 +194,6 @@ fn execute_block(prev_state: GlobalState, block: Block) -> GlobalState {
 
 ### 2.4 State Space Vector Diagram
 
-<svg viewBox="0 0 800 420" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <rect x="40" y="30" width="720" height="360" rx="16" ry="16" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <text x="400" y="65" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Global State Tuple State Structure &amp; Merkle Root H(State)</text>
-  <line x1="60" y1="85" x2="740" y2="85" stroke="#e0e0e0" stroke-width="1.5"/>
-
-  <!-- Substates -->
-  <rect x="60" y="110" width="150" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="135" y="140" font-size="14" font-weight="600" text-anchor="middle">EVM State</text>
-  <text x="135" y="160" font-size="11" fill="#666666" text-anchor="middle">revm Account Storage</text>
-
-  <rect x="225" y="110" width="150" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="300" y="140" font-size="14" font-weight="600" text-anchor="middle">SVM State</text>
-  <text x="300" y="160" font-size="11" fill="#666666" text-anchor="middle">Solana Account Vectors</text>
-
-  <rect x="390" y="110" width="150" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="465" y="140" font-size="14" font-weight="600" text-anchor="middle">PolkaVM State</text>
-  <text x="465" y="160" font-size="11" fill="#666666" text-anchor="middle">RISC-V Contract State</text>
-
-  <rect x="555" y="110" width="180" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="645" y="140" font-size="14" font-weight="600" text-anchor="middle">Move & CosmWasm State</text>
-  <text x="645" y="160" font-size="11" fill="#666666" text-anchor="middle">Resources &amp; Wasmi Store</text>
-
-  <!-- Merkle Combine Arrows -->
-  <path d="M 135 180 L 135 230 L 400 230" fill="none" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 300 180 L 300 230" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 465 180 L 465 230" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 645 180 L 645 230 L 400 230" fill="none" stroke="#111111" stroke-width="1.5"/>
-
-  <path d="M 400 230 L 400 260" stroke="#111111" stroke-width="2"/>
-
-  <!-- Merkle Root Box -->
-  <rect x="250" y="260" width="300" height="90" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="400" y="295" font-size="16" font-weight="700" text-anchor="middle">Blake2b-256 State Root H(State)</text>
-  <text x="400" y="325" font-size="12" fill="#555555" text-anchor="middle">Committed in Substrate Block Header</text>
-</svg>
 
 ---
 
@@ -386,47 +351,6 @@ A mapping is valid only while its handle, ownership proof, domain, and address-f
 
 ### 4.2 Unified Address Resolution Diagram
 
-<svg viewBox="0 0 800 360" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <text x="400" y="35" font-size="18" font-weight="700" fill="#111111" text-anchor="middle">Unified Address Bijection Address Mapping</text>
-
-  <!-- Central Unified Address -->
-  <rect x="250" y="60" width="300" height="60" rx="12" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
-  <text x="400" y="88" font-size="15" font-weight="700" text-anchor="middle">Unified Address (32-byte Key)</text>
-  <text x="400" y="106" font-size="11" fill="#555555" text-anchor="middle">Canonical User Identity</text>
-
-  <!-- Arrows to 5 VM Formats -->
-  <path d="M 280 120 L 100 200" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 340 120 L 250 200" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 400 120 L 400 200" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 460 120 L 550 200" stroke="#111111" stroke-width="1.5"/>
-  <path d="M 520 120 L 700 200" stroke="#111111" stroke-width="1.5"/>
-
-  <!-- 5 Targets -->
-  <rect x="30" y="200" width="140" height="90" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="100" y="230" font-size="13" font-weight="700" text-anchor="middle">EVM Address</text>
-  <text x="100" y="255" font-size="11" fill="#555555" text-anchor="middle">20-byte Hex</text>
-  <text x="100" y="272" font-size="10" fill="#777777" text-anchor="middle">0x71C...a29</text>
-
-  <rect x="180" y="200" width="140" height="90" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="250" y="230" font-size="13" font-weight="700" text-anchor="middle">SVM Pubkey</text>
-  <text x="250" y="255" font-size="11" fill="#555555" text-anchor="middle">32-byte Base58</text>
-  <text x="250" y="272" font-size="10" fill="#777777" text-anchor="middle">7xK8...mP9</text>
-
-  <rect x="330" y="200" width="140" height="90" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="400" y="230" font-size="13" font-weight="700" text-anchor="middle">PolkaVM ID</text>
-  <text x="400" y="255" font-size="11" fill="#555555" text-anchor="middle">32-byte SS58</text>
-  <text x="400" y="272" font-size="10" fill="#777777" text-anchor="middle">5Grw...bQ5</text>
-
-  <rect x="480" y="200" width="140" height="90" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="550" y="230" font-size="13" font-weight="700" text-anchor="middle">Move Address</text>
-  <text x="550" y="255" font-size="11" fill="#555555" text-anchor="middle">16-byte Hex</text>
-  <text x="550" y="272" font-size="10" fill="#777777" text-anchor="middle">0x00...01</text>
-
-  <rect x="630" y="200" width="140" height="90" rx="10" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
-  <text x="700" y="230" font-size="13" font-weight="700" text-anchor="middle">CosmWasm</text>
-  <text x="700" y="255" font-size="11" fill="#555555" text-anchor="middle">Bech32 String</text>
-  <text x="700" y="272" font-size="10" fill="#777777" text-anchor="middle">il1q2w...x8</text>
-</svg>
 
 ### 4.5 Balance Conservation Invariant
 For any unified address `a`, let `balance(a, k)` denote native `IL` tokens held within sub-state `k`. Global balance conservation requires that the sum of all balances across all sub-states plus the treasury reserve equals the total token supply at all times. No transaction or atomic bundle may create or destroy tokens — only transfer them between sub-states.
@@ -862,28 +786,6 @@ The LiteVerse pallet uses Substrate's off-chain worker mechanism (`CreateBare<Ca
 ### 6.1 Pipelined Consensus Protocol
 InterLayer utilizes a 3-chain HotStuff BFT consensus engine operating over views .
 
-<svg viewBox="0 0 800 240" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <rect x="40" y="30" width="150" height="80" rx="10" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="115" y="65" font-size="15" font-weight="700" text-anchor="middle">Prepare Phase</text>
-  <text x="115" y="85" font-size="11" fill="#555555" text-anchor="middle">Broadcast Proposal</text>
-
-  <path d="M 190 70 L 240 70" stroke="#111111" stroke-width="2"/>
-
-  <rect x="240" y="30" width="160" height="80" rx="10" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="320" y="65" font-size="15" font-weight="700" text-anchor="middle">Precommit Phase</text>
-  <text x="320" y="85" font-size="11" fill="#555555" text-anchor="middle">Form LockedQC</text>
-
-  <path d="M 400 70 L 450 70" stroke="#111111" stroke-width="2"/>
-
-  <rect x="450" y="30" width="150" height="80" rx="10" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="525" y="65" font-size="15" font-weight="700" text-anchor="middle">Commit Phase</text>
-  <text x="525" y="85" font-size="11" fill="#555555" text-anchor="middle">Form CommitQC</text>
-
-  <path d="M 600 70 L 650 70" stroke="#111111" stroke-width="2"/>
-
-  <rect x="650" y="30" width="110" height="80" rx="10" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <text x="705" y="75" font-size="15" font-weight="700" text-anchor="middle">FINALITY</text>
-</svg>
 
 A Quorum Certificate  is defined as:
 
@@ -3575,6 +3477,6 @@ The `AtomicContextValidator::validate_comprehensive()` method enforces the follo
 ---
 
 *End of InterLayer: Core Protocol Specification & Technical Architecture — Gravity Testnet*
-*Authored by Bharath B R ([@Bharathcoorg](https://forum.polkadot.network/u/Bharathcoorg))*
+*Authored by Bharath B R ([@bharathcoorg7](https://x.com/bharathcoorg7))*
 *Publication Date: August 2026*
-*Revision: TECHNICAL-ARCHITECTURE-RELEASE*
+
