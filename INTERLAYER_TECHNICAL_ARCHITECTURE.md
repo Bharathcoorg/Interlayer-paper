@@ -43,17 +43,18 @@ This document specifies the technical architecture and protocol design of **Inte
 
 | Component | Status | Details |
 | :--- | :--- | :--- |
-| **Substrate Runtime** | Implemented | 173 KB monolithic runtime kernel (`runtime/src/lib.rs`) |
-| **Runtime Pallets** | Implemented (36 Pallets) | 36 core active runtime pallets specifying multi-VM execution, identity, and governance |
-| **HotStuff BFT Consensus** | Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) implementing Pipelined 3-Chain HotStuff BFT |
-| **Multi-VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | Implemented | Compiled inline within the monolithic Substrate runtime kernel (`mel-evm`, `mel-svm`, `mel-polkavm`, `mel-move`, `mel-cosmwasm`) |
-| **RPC Interface Suite** | Implemented | 10 handler files, 4,381 total lines across 18 JSON-RPC namespaces |
-| **MPC Threshold Signer (TSS)** | Implemented | `mpc-executor/`: 9 Rust source files for DKG and threshold signing across BTC, ETH, SOL, DOT, TON |
-| **LiteVerse DePIN Watcher Mesh** | Implemented | Mobile Watcher Node (Android/iOS), Browser Node (WASM), and LiteVerse Dashboard (Tier 0 & Tier 1 active) |
-| **InterClaw AI Agent Framework** | Implemented | Autonomous agent intent execution engine backed on-chain by `pallet-agent` |
-| **Portal Dashboard** | Standalone Utility | External Web3 dApp user interface (`portal/`) for smart accounts and multi-VM contract interaction |
-| **Block Explorer** | Standalone Utility | Standalone block and state explorer (`explorer.interlayer.one`) interacting via JSON-RPC |
-| **Developer Faucet** | Standalone Utility | Testnet token distribution faucet (`faucet.interlayer.one`) backed on-chain by `pallet-faucet` |
+| **Substrate Runtime Kernel** | Implemented | 173 KB monolithic runtime kernel (`runtime/src/lib.rs`) housing 36 core active runtime pallets |
+| **HotStuff BFT Consensus Engine** | Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) implementing Pipelined 3-Chain HotStuff BFT |
+| **Multi-VM Execution Layer (MEL)** | Implemented | 5 heterogeneous VM execution adapters compiled inline (`mel-evm`, `mel-svm`, `mel-polkavm`, `mel-move`, `mel-cosmwasm`) |
+| **MPC Threshold Signer (TSS)** | Implemented | `mpc-executor/`: 9 Rust source files for DKG and threshold custody across BTC, ETH, SOL, DOT, TON |
+| **LiteVerse DePIN Watcher Mesh** | Implemented | Mobile Node (Android/iOS), WASM Browser Node (`browser.liteverse.network`), and Network Dashboard (`app.liteverse.network`) |
+| **InterClaw Autonomous Agents** | Implemented | Decentralized on-chain personal agents platform (`interclaw.space`) powered by LiteVerse and `pallet-agent` |
+| **InterLayer Web Wallet** | Implemented | Non-custodial multi-VM web wallet (`wallet.interlayer.one`) with encrypted browser storage and handle support |
+| **InterLayer Console & Portal** | Implemented | Web3 dApp console (`portal.interlayer.one`) for staking, handles, multi-VM wallet binding, and quests |
+| **InterLayer Block Explorer** | Implemented | Multi-VM block and state explorer (`explorer.interlayer.one`) supporting transactions, tokens, NFTs, and atomic bundles |
+| **Governance Application** | Implemented | Custom OpenGov governance console (`gov.interlayer.one`) for proposals, referenda, and treasury grants |
+| **Developer Testnet Faucet** | Implemented | Testnet token distribution faucet (`faucet.interlayer.one`) backed on-chain by `pallet-faucet` |
+| **RPC Suite & Polkadot.js** | Implemented | 10 handler files across 18 namespaces, with live Substrate RPC (`node.interlayer.one`) and Polkadot.js Apps integration |
 
 ---
 
@@ -3105,12 +3106,17 @@ enum AgentStatus { Active, Suspended, Deregistered }
 - **Cross-VM message max size**: 65,536 bytes
 - **Merkle proof max size**: 16,384 bytes
 
-**Live Infrastructure**:
-- Portal: `portal.interlayer.one`
-- Explorer: `explorer.interlayer.one`
-- Wallet: `wallet.interlayer.one`
-- Faucet: `faucet.interlayer.one`
-- Governance: `gov.interlayer.one`
+**Live Deployed Infrastructure & Public Endpoints**:
+- **Portal Console**: [`portal.interlayer.one`](https://portal.interlayer.one) — Staking, handles, VM binding, quests
+- **Block Explorer**: [`explorer.interlayer.one`](https://explorer.interlayer.one) — Multi-VM block and state explorer
+- **Web Wallet**: [`wallet.interlayer.one`](https://wallet.interlayer.one) — Non-custodial VM-aware web wallet
+- **Developer Faucet**: [`faucet.interlayer.one`](https://faucet.interlayer.one) — Rate-limited testnet token distribution
+- **Governance Console**: [`gov.interlayer.one`](https://gov.interlayer.one) — Custom OpenGov voting & proposals
+- **LiteVerse Browser Node**: [`browser.liteverse.network`](https://browser.liteverse.network) — WASM browser watcher node
+- **LiteVerse Network App**: [`app.liteverse.network`](https://app.liteverse.network) — DePIN network status & capacity
+- **InterClaw Agent Platform**: [`interclaw.space`](https://www.interclaw.space/) — Decentralized on-chain AI agents
+- **Polkadot.js Apps Portal**: [`polkadot.js.org/apps`](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fnode.interlayer.one#/explorer) — Direct Substrate node connectivity
+- **Developer Documentation**: [`interlayer.one/developers/docs`](https://www.interlayer.one/developers/docs) — RPC & developer guides
 
 ---
 
