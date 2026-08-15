@@ -1,11 +1,18 @@
 # InterLayer: Core Protocol Specification & Technical Architecture
 
-**Gravity Testnet Protocol Blueprint & System Architecture Reference**
+**Gravity Testnet**
 
-**Author:** Bharath B R ([@bharathcoorg7](https://x.com/bharathcoorg7))
-**Version:** Gravity Testnet Specification
-**Status:** Active Core Protocol Specification & Technical Architecture — Official Release Edition
-**Repository:** [interlayer-gravity-testnet](https://github.com/Bharathcoorg/interlayer-gravity-testnet)
+### Document Information
+
+| Field | Value |
+| :--- | :--- |
+| **Document** | InterLayer Core Protocol Specification & Technical Architecture |
+| **Network** | Gravity Testnet |
+| **Version** | v0.1 |
+| **Status** | Draft Technical Specification |
+| **Date** | August 2026 |
+| **Author** | Bharath B R ([@bharathcoorg7](https://x.com/bharathcoorg7)) |
+| **Organization** | InterLayer Foundation |
 
 ---
 
@@ -21,60 +28,228 @@ This specification establishes the core architectural design of the global state
 
 ## Document Scope & Conventions
 
-This is a **protocol architecture specification** describing the target system design of InterLayer (Gravity Testnet). It serves as the authoritative reference for protocol designers, validators, and developers building on InterLayer.
+This document specifies the technical architecture and protocol design of **InterLayer (Gravity Testnet)**. It serves as the authoritative reference for protocol engineers, validators, node operators, and application developers.
 
-**Conventions used in this document:**
-- **Rust code blocks** represent either actual production code extracted from the repository or design-target pseudocode illustrating intended data structures and algorithms. When a code block is sourced directly from a specific file, the source is noted in the surrounding text.
-- **Tables and parameter values** (gas costs, fee percentages, confirmation depths, staking parameters) reflect the current testnet configuration. All governance-configurable parameters are noted as such.
-- Features not yet implemented are described as part of the target architecture and will be delivered in subsequent releases.
+### Classification of Specification Content:
+
+- **[Implemented]**: Concrete production components currently active in the Substrate runtime kernel, HotStuff BFT consensus engine, off-chain MPC signer executor, and multi-VM execution adapters.
+- **[Current Testnet Configuration]**: Concrete network parameters, genesis chain specifications, gas calibration constants, fee distribution formulas, and confirmation thresholds.
+- **[Design-Target Architecture]**: Target formal invariant specifications, advanced cross-VM orchestration semantics, and post-quantum cryptographic extensions.
+- **[Optional / Future Governance]**: Optional modular extensions (`bridge-pallet`, `dex-pallet`) preserved in the codebase for future activation via on-chain governance.
+
+---
 
 ## Implementation Status
 
 | Component | Status | Details |
 | :--- | :--- | :--- |
-| **Substrate Runtime** | ✅ Implemented | 173 KB monolithic runtime (`runtime/src/lib.rs`) |
-| **Runtime Pallets** | ✅ 38 pallets implemented | All 38 have `#[pallet::call]`, `#[pallet::storage]`, `#[pallet::event]`; 14/38 have unit tests |
-| **HotStuff BFT Consensus** | ✅ Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) |
-| **VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | ✅ Integrated | Compiled inline within the monolithic runtime (not separate crate directories) |
-| **RPC Handlers** | ✅ Implemented | 10 handler files, 4,381 total lines across 18 namespaces |
-| **MPC Threshold Signer** | ✅ Executor implemented | `mpc-executor/`: 9 Rust source files; `mpc-nodes/` and `mpc-recovery/` are Docker orchestration configurations |
-| **Portal Dashboard** | 🛠️ Standalone Utility | External Web3 dApp interface (`portal/`) for testnet interaction (not a runtime pallet) |
-| **Block Explorer** | 🛠️ Standalone Utility | Standalone block and state explorer (`explorer/`) interacting via JSON-RPC |
-| **Bridge Pallet** | ⏸️ Optional | 915 lines implemented but excluded from core spec (future activation via governance) |
-| **DEX Pallet** | ⏸️ Optional | 218 lines implemented but excluded from core spec (future activation via governance) |
-| **LiteVerse Watcher Nodes** | ✅ Implemented | Mobile Watcher Node (Android/iOS), Browser Node (WASM), and LiteVerse Dashboard are developed and active (Tier 0 & Tier 1) |
+| **Substrate Runtime** | Implemented | 173 KB monolithic runtime kernel (`runtime/src/lib.rs`) |
+| **Runtime Pallets** | Implemented (38 Pallets) | 36 core active runtime pallets + 2 optional legacy pallets (`bridge-pallet`, `dex-pallet`) |
+| **HotStuff BFT Consensus** | Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) |
+| **VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | Implemented | Compiled inline within the monolithic Substrate runtime kernel |
+| **RPC Handlers** | Implemented | 10 handler files, 4,381 total lines across 18 namespaces |
+| **MPC Threshold Signer** | Implemented | `mpc-executor/`: 9 Rust source files; `mpc-nodes/` and `mpc-recovery/` container configurations |
+| **Portal Dashboard** | Standalone Utility | External Web3 dApp interface (`portal/`) for testnet interaction (not a runtime pallet) |
+| **Block Explorer** | Standalone Utility | Standalone block and state explorer (`explorer/`) interacting via JSON-RPC |
+| **LiteVerse Watcher Nodes** | Implemented | Mobile Watcher Node (Android/iOS), Browser Node (WASM), and LiteVerse Dashboard (Tier 0 & Tier 1) |
+| **Bridge Pallet** | Optional | 915 lines implemented; preserved in codebase for optional future governance activation |
+| **DEX Pallet** | Optional | 218 lines implemented; preserved in codebase for optional future governance activation |
 
 ---
 
 ## Table of Contents
 
-1. [Chapter 1: System Overview & Protocol Architecture](#chapter-1-system-overview--protocol-architecture)
-2. [Chapter 2: State Machine Architecture & Global Storage Layout](#chapter-2-state-machine-architecture--global-storage-layout)
-3. [Chapter 3: Multi-VM Execution Layer (MEL) Engine Architecture](#chapter-3-multi-vm-execution-layer-mel-engine-architecture)
-4. [Chapter 4: Canonical Unified Address Space & Asset Accounting](#chapter-4-canonical-unified-address-space--asset-accounting)
-5. [Chapter 5: LiteVerse DePIN Watcher Mesh & Liquidity Orchestration](#chapter-5-liteverse-depin-watcher-mesh--liquidity-orchestration)
-6. [Chapter 6: Pipelined 3-Chain HotStuff BFT Consensus Protocol](#chapter-6-pipelined-3-chain-hotstuff-bft-consensus-protocol)
-7. [Chapter 7: Deep-Dive Virtual Machine Execution Adapters](#chapter-7-deep-dive-virtual-machine-execution-adapters)
-8. [Chapter 8: Off-Chain Threshold MPC Signer Infrastructure (TSS)](#chapter-8-off-chain-threshold-mpc-signer-infrastructure-tss)
-9. [Chapter 9: Cryptographic Foundations & Quantum Signature Engine](#chapter-9-cryptographic-foundations--quantum-signature-engine)
-10. [Chapter 10: Real-Yield Economic Model & Fee Routing Engine](#chapter-10-real-yield-economic-model--fee-routing-engine)
-11. [Chapter 11: Comprehensive Substrate Runtime Pallet Architecture (36 Core Active Runtime Pallets)](#chapter-11-comprehensive-substrate-runtime-pallet-architecture-36-core-active-runtime-pallets)
-12. [Chapter 12: Wire-Format & Binary Serialization Specifications (SCALE, RLP, Borsh, BCS, Wasm)](#chapter-12-wire-format--binary-serialization-specifications-scale-rlp-borsh-bcs-wasm)
-13. [Chapter 13: Exhaustive JSON-RPC Interface & API Specification (Core, MEL, LiteVerse, MPC)](#chapter-13-exhaustive-json-rpc-interface--api-specification-core-mel-liteverse-mpc)
-14. [Chapter 14: Multi-VM Smart Contract & Cross-VM Developer Integration Guide](#chapter-14-multi-vm-smart-contract--cross-vm-developer-integration-guide)
-15. [Chapter 15: System Invariants & Protocol Guarantees](#chapter-15-system-invariants--protocol-guarantees)
-
-**Appendices**
-
-- [Appendix A: Testnet Deployment Configuration](#appendix-a-testnet-deployment-configuration)
-- [Appendix B: List of Figures](#appendix-b-list-of-figures)
-- [Appendix C: Public Runtime Composition Index](#appendix-c-public-runtime-composition-index)
-- [Appendix D: Canonical Protocol Type Definitions](#appendix-d-canonical-protocol-type-definitions)
-- [Appendix E: Gas Calibration Constants & Cross-VM Overhead Matrix](#appendix-e-gas-calibration-constants--cross-vm-overhead-matrix)
-- [Appendix F: MPC Threshold Signer Protocol Listings](#appendix-f-mpc-threshold-signer-protocol-listings)
-- [Appendix G: HotStuff Consensus Protocol Reference](#appendix-g-hotstuff-consensus-protocol-reference)
-- [Appendix H: Atomic Execution State Machine Reference](#appendix-h-atomic-execution-state-machine-reference)
-- [Appendix I: Glossary of Terms](#appendix-i-glossary-of-terms)
+- [**Chapter 1: System Overview & Protocol Architecture**](#chapter-1-system-overview-protocol-architecture)
+  - [1.1 Executive Summary & Historical Context](#11-executive-summary-historical-context)
+  - [1.2 Core Architectural Principles of the InterLayer Substrate Kernel](#12-core-architectural-principles-of-the-interlayer-substrate-kernel)
+  - [1.3 Network Participant Roles](#13-network-participant-roles)
+- [**Chapter 2: State Machine Architecture & Global Storage Layout**](#chapter-2-state-machine-architecture-global-storage-layout)
+  - [2.1 Core Data Types & Conventions](#21-core-data-types-conventions)
+  - [2.2 Global State Structure](#22-global-state-structure)
+  - [2.3 Merkle Patricia Trie Commitments & Block Transition](#23-merkle-patricia-trie-commitments-block-transition)
+  - [2.4 State Space Vector Diagram](#24-state-space-vector-diagram)
+- [**Chapter 3: Multi-VM Execution Layer (MEL) Engine Architecture**](#chapter-3-multi-vm-execution-layer-mel-engine-architecture)
+  - [3.1 Intuitive Explanation of Multi-VM Atomic Execution](#31-intuitive-explanation-of-multi-vm-atomic-execution)
+  - [3.2 Atomic Execution Flowchart](#32-atomic-execution-flowchart)
+  - [3.3 Atomic Bundle Execution Engine](#33-atomic-bundle-execution-engine)
+  - [3.4 MEV Protection & Frontrun Guard Pipeline](#34-mev-protection-frontrun-guard-pipeline)
+  - [3.5 Universal Gas Metering & Calibration Engine](#35-universal-gas-metering-calibration-engine)
+- [**Chapter 4: Canonical Unified Address Space & Asset Accounting**](#chapter-4-canonical-unified-address-space-asset-accounting)
+  - [4.1 Dual-Mode Address Architecture](#41-dual-mode-address-architecture)
+  - [4.2 Universal Handle System (`username`)](#42-universal-handle-system-username)
+  - [4.3 Address Resolution Protocol (`resolve_address()`)](#43-address-resolution-protocol-resolve_address)
+  - [4.4 Unified Address Resolution & Dual-Layer Binding Architecture](#44-unified-address-resolution-dual-layer-binding-architecture)
+  - [4.5 Balance Conservation Invariant](#45-balance-conservation-invariant)
+  - [4.6 Implementation: `unified-address-registry` Pallet](#46-implementation-unified-address-registry-pallet)
+  - [4.7 IL Native Multi-VM Token Specification](#47-il-native-multi-vm-token-specification)
+  - [4.8 Programmable Wallet Architecture (`pallet-smart-accounts`)](#48-programmable-wallet-architecture-pallet-smart-accounts)
+  - [4.9 Complete Handle & Naming System (`pallet-handles` + `unified-address-registry`)](#49-complete-handle-naming-system-pallet-handles-unified-address-registry)
+- [**Chapter 5: LiteVerse DePIN Watcher Mesh & Liquidity Orchestration**](#chapter-5-liteverse-depin-watcher-mesh-liquidity-orchestration)
+  - [5.1 Three-Layer Liquidity & Custody Architecture](#51-three-layer-liquidity-custody-architecture)
+  - [5.2 LiteVerse DePIN Node Tier Architecture](#52-liteverse-depin-node-tier-architecture)
+  - [5.3 External Chain Confirmation Depths & Circuit Breakers](#53-external-chain-confirmation-depths-circuit-breakers)
+  - [5.4 Liquidity Inflow & Outflow Flowchart](#54-liquidity-inflow-outflow-flowchart)
+  - [5.5 Implementation: `liteverse-pallet` Architecture](#55-implementation-liteverse-pallet-architecture)
+- [**Chapter 6: Pipelined 3-Chain HotStuff BFT Consensus Protocol**](#chapter-6-pipelined-3-chain-hotstuff-bft-consensus-protocol)
+  - [6.1 Pipelined Consensus Protocol](#61-pipelined-consensus-protocol)
+  - [6.2 BLS12-381 Aggregate Cryptography](#62-bls12-381-aggregate-cryptography)
+  - [6.3 Safety Theorem and Proof](#63-safety-theorem-and-proof)
+  - [6.4 Implementation: Consensus Engine Main Loop](#64-implementation-consensus-engine-main-loop)
+  - [6.5 Message Processing Pipeline](#65-message-processing-pipeline)
+  - [6.6 `NetworkInterface` Trait](#66-networkinterface-trait)
+  - [6.7 Liveness Guarantee](#67-liveness-guarantee)
+  - [6.8 Dynamic Block Timing & Adaptive Interval Adjustments](#68-dynamic-block-timing-adaptive-interval-adjustments)
+- [**Chapter 7: Deep-Dive Virtual Machine Execution Adapters**](#chapter-7-deep-dive-virtual-machine-execution-adapters)
+  - [7.1 EVM Adapter (`mel-evm`): Production-Grade Ethereum Execution](#71-evm-adapter-mel-evm-production-grade-ethereum-execution)
+  - [7.2 Solana SVM Adapter (`mel-svm`): eBPF Execution with SPL Token Emulation](#72-solana-svm-adapter-mel-svm-ebpf-execution-with-spl-token-emulation)
+  - [7.3 PolkaVM Adapter (`mel-polkavm`): RISC-V Native Execution](#73-polkavm-adapter-mel-polkavm-risc-v-native-execution)
+  - [7.4 Move VM Adapter (`mel-move`): Linear Resource Execution](#74-move-vm-adapter-mel-move-linear-resource-execution)
+  - [7.5 CosmWasm Adapter (`mel-cosmwasm`): WebAssembly Actor Model](#75-cosmwasm-adapter-mel-cosmwasm-webassembly-actor-model)
+- [**Chapter 8: Off-Chain Threshold MPC Signer Infrastructure (TSS)**](#chapter-8-off-chain-threshold-mpc-signer-infrastructure-tss)
+  - [8.1 Cryptographic Foundation: secp256k1 Schnorr Signatures](#81-cryptographic-foundation-secp256k1-schnorr-signatures)
+  - [8.2 Distributed Key Generation (DKG) Ceremony](#82-distributed-key-generation-dkg-ceremony)
+  - [8.3 Threshold Signing Protocol (FROST-style)](#83-threshold-signing-protocol-frost-style)
+  - [8.4 Signature Verification](#84-signature-verification)
+  - [8.5 (t, n) Threshold Key Generation via Polynomial Shamir Secret Sharing](#85-t-n-threshold-key-generation-via-polynomial-shamir-secret-sharing)
+  - [8.6 Threshold Signing Protocol (Schnorr)](#86-threshold-signing-protocol-schnorr)
+  - [8.7 Lagrange Interpolation Coefficients](#87-lagrange-interpolation-coefficients)
+  - [8.8 Aggregated Signature Verification](#88-aggregated-signature-verification)
+  - [8.9 BIP-32/44 Hierarchical Deterministic Key Derivation](#89-bip-3244-hierarchical-deterministic-key-derivation)
+  - [8.10 CEX-Style MPC Address Derivation (`hd_wallet`)](#810-cex-style-mpc-address-derivation-hd_wallet)
+- [**Chapter 9: Cryptographic Foundations & Quantum Signature Engine**](#chapter-9-cryptographic-foundations-quantum-signature-engine)
+  - [9.1 Classical Cryptographic Primitive Suite](#91-classical-cryptographic-primitive-suite)
+  - [9.2 Hash Functions](#92-hash-functions)
+  - [9.3 Post-Quantum Signature Engine](#93-post-quantum-signature-engine)
+- [**Chapter 10: Real-Yield Economic Model & Fee Routing Engine**](#chapter-10-real-yield-economic-model-fee-routing-engine)
+  - [10.1 Economic Design Philosophy: Non-Inflationary Fee-Driven Yield](#101-economic-design-philosophy-non-inflationary-fee-driven-yield)
+  - [10.2 Fee Composition](#102-fee-composition)
+  - [10.3 Block Fee Distribution Formulas](#103-block-fee-distribution-formulas)
+  - [10.4 Validator Reward Distribution](#104-validator-reward-distribution)
+  - [10.5 Slashing Penalties](#105-slashing-penalties)
+  - [10.6 Dynamic Gas Pricing Engine](#106-dynamic-gas-pricing-engine)
+  - [10.7 Unified Multi-VM Governance Framework](#107-unified-multi-vm-governance-framework)
+  - [10.8 Payment Channels & Off-Chain Micro-Transactions](#108-payment-channels-off-chain-micro-transactions)
+  - [10.9 Gas Sponsorship Engine & Sponsored Transactions](#109-gas-sponsorship-engine-sponsored-transactions)
+  - [10.10 Staking Parameters & Delegation Rules](#1010-staking-parameters-delegation-rules)
+  - [10.11 Supported Wallet Integrations](#1011-supported-wallet-integrations)
+  - [10.12 VM Feature Adoption Pipeline & Canary Upgrade Gates](#1012-vm-feature-adoption-pipeline-canary-upgrade-gates)
+- [**Chapter 11: Comprehensive Substrate Runtime Pallet Architecture (36 Core Active Runtime Pallets)**](#chapter-11-comprehensive-substrate-runtime-pallet-architecture-36-core-active-runtime-pallets)
+  - [11.1 Pallet `atomic-execution`](#111-pallet-atomic-execution)
+  - [11.2 Pallet `data-availability-hooks`](#112-pallet-data-availability-hooks)
+  - [11.3 Pallet `delegated-staking`](#113-pallet-delegated-staking)
+  - [11.4 Pallet `dynamic-blocks`](#114-pallet-dynamic-blocks)
+  - [11.5 Pallet `faucet`](#115-pallet-faucet)
+  - [11.6 Pallet `fee-distribution`](#116-pallet-fee-distribution)
+  - [11.7 Pallet `fees-pallet`](#117-pallet-fees-pallet)
+  - [11.8 Pallet `gas-sponsorship-pallet`](#118-pallet-gas-sponsorship-pallet)
+  - [11.9 Pallet `governance-pallet`](#119-pallet-governance-pallet)
+  - [11.10 Pallet `handles`](#1110-pallet-handles)
+  - [11.11 Pallet `hotstuff-session`](#1111-pallet-hotstuff-session)
+  - [11.12 Pallet `interlayer-token`](#1112-pallet-interlayer-token)
+  - [11.13 Pallet `liteverse-pallet`](#1113-pallet-liteverse-pallet)
+  - [11.14 Pallet `mel-bus-pallet`](#1114-pallet-mel-bus-pallet)
+  - [11.15 Pallet `mel-core-pallet`](#1115-pallet-mel-core-pallet)
+  - [11.16 Pallet `mev-protection`](#1116-pallet-mev-protection)
+  - [11.17 Pallet `monitoring`](#1117-pallet-monitoring)
+  - [11.18 Pallet `multi-vm-governance`](#1118-pallet-multi-vm-governance)
+  - [11.19 Pallet `native-assets`](#1119-pallet-native-assets)
+  - [11.20 Pallet `pallet-agent`](#1120-pallet-pallet-agent)
+  - [11.21 Pallet `payment-channels-pallet`](#1121-pallet-payment-channels-pallet)
+  - [11.22 Pallet `pq-signatures`](#1122-pallet-pq-signatures)
+  - [11.23 Pallet `quantum-signatures`](#1123-pallet-quantum-signatures)
+  - [11.24 Pallet `rate-limit`](#1124-pallet-rate-limit)
+  - [11.25 Pallet `registry-pallet`](#1125-pallet-registry-pallet)
+  - [11.26 Pallet `session-management`](#1126-pallet-session-management)
+  - [11.27 Pallet `settlement-pallet`](#1127-pallet-settlement-pallet)
+  - [11.28 Pallet `slashing`](#1128-pallet-slashing)
+  - [11.29 Pallet `smart-accounts`](#1129-pallet-smart-accounts)
+  - [11.30 Pallet `staking-pallet`](#1130-pallet-staking-pallet)
+  - [11.31 Pallet `treasury-liquidity`](#1131-pallet-treasury-liquidity)
+  - [11.32 Pallet `unified-address-registry`](#1132-pallet-unified-address-registry)
+  - [11.33 Pallet `unified-balance`](#1133-pallet-unified-balance)
+  - [11.34 Pallet `validator-wallet`](#1134-pallet-validator-wallet)
+  - [11.35 Pallet `vm-adapter-monitor`](#1135-pallet-vm-adapter-monitor)
+  - [11.36 Pallet `zk-verification`](#1136-pallet-zk-verification)
+- [**Chapter 12: Wire-Format & Binary Serialization Specifications (SCALE, RLP, Borsh, BCS, Wasm)**](#chapter-12-wire-format-binary-serialization-specifications-scale-rlp-borsh-bcs-wasm)
+  - [12.1 Canonical Encoding Conventions](#121-canonical-encoding-conventions)
+  - [12.2 `MelTx` Universal Transaction Byte Layout](#122-meltx-universal-transaction-byte-layout)
+  - [12.3 `AtomicBundle` Wire Format Layout](#123-atomicbundle-wire-format-layout)
+  - [12.4 `CrossVmMessage` Wire Format Layout](#124-crossvmmessage-wire-format-layout)
+  - [12.5 Per-VM Serialization Protocols](#125-per-vm-serialization-protocols)
+  - [12.6 Native Payload Validation Matrix](#126-native-payload-validation-matrix)
+  - [12.7 Zero-Knowledge (ZK) Proof Verification & Data Availability (DA) Hooks](#127-zero-knowledge-zk-proof-verification-data-availability-da-hooks)
+- [**Chapter 13: JSON-RPC Interface & API Specification**](#chapter-13-json-rpc-interface-api-specification)
+  - [13.1 Core MEL Namespace (`mel_*`)](#131-core-mel-namespace-mel_)
+  - [13.2 Handle & Identity Namespace (`mel_*Handle*`)](#132-handle-identity-namespace-mel_handle)
+  - [13.3 Unified Address Registry Namespace (`mel_*Address*`)](#133-unified-address-registry-namespace-mel_address)
+  - [13.4 Smart Accounts & Standalone Utility API (`mel_*SmartAccount*`, `mel_*Wallet*`, `portal_*`)](#134-smart-accounts-standalone-utility-api-mel_smartaccount-mel_wallet-portal_)
+  - [13.5 Portal Execution Namespace (`mel_*Portal*`)](#135-portal-execution-namespace-mel_portal)
+  - [13.6 Faucet & Balance Namespace (`mel_*Faucet*`, `mel_*Balance*`)](#136-faucet-balance-namespace-mel_faucet-mel_balance)
+  - [13.7 Gas Sponsorship Namespace (`mel_*Sponsor*`)](#137-gas-sponsorship-namespace-mel_sponsor)
+  - [13.8 Payment Channels Namespace (`mel_*Channel*`)](#138-payment-channels-namespace-mel_channel)
+  - [13.9 LiteVerse DePIN Watcher Namespace (`mel_*Liteverse*`)](#139-liteverse-depin-watcher-namespace-mel_liteverse)
+  - [13.10 MEV Protection Namespace (`mel_*Mev*`)](#1310-mev-protection-namespace-mel_mev)
+  - [13.11 EVM Namespace (`eth_*`) — Ethereum JSON-RPC Compatibility](#1311-evm-namespace-eth_-ethereum-json-rpc-compatibility)
+  - [13.12 SVM Namespace — Solana JSON-RPC Compatibility](#1312-svm-namespace-solana-json-rpc-compatibility)
+  - [13.13 Move VM Namespace (`v1_*`) — Aptos-Compatible REST API](#1313-move-vm-namespace-v1_-aptos-compatible-rest-api)
+  - [13.14 PolkaVM Namespace (`pvm_*`)](#1314-polkavm-namespace-pvm_)
+  - [13.15 CosmWasm Namespace — Tendermint ABCI Compatibility](#1315-cosmwasm-namespace-tendermint-abci-compatibility)
+  - [13.16 MPC Threshold Signer Namespace (`mpc_*`)](#1316-mpc-threshold-signer-namespace-mpc_)
+  - [13.17 Portal Dashboard Namespace (`portal_*`)](#1317-portal-dashboard-namespace-portal_)
+  - [13.18 Staking Namespace (`staking_*`)](#1318-staking-namespace-staking_)
+- [**Chapter 14: Multi-VM Smart Contract & Cross-VM Developer Integration Guide**](#chapter-14-multi-vm-smart-contract-cross-vm-developer-integration-guide)
+  - [14.1 EVM Smart Contract Development (Solidity & Ethers.js)](#141-evm-smart-contract-development-solidity-ethersjs)
+  - [14.2 SVM Solana Program Development (Rust & Anchor)](#142-svm-solana-program-development-rust-anchor)
+  - [14.3 PolkaVM Contract Development (Rust / ink! Style)](#143-polkavm-contract-development-rust-ink-style)
+  - [14.4 Move Module Development](#144-move-module-development)
+  - [14.5 CosmWasm Contract Development (Rust)](#145-cosmwasm-contract-development-rust)
+  - [14.6 Cross-VM Atomic Integration (`@interlayer/sdk`)](#146-cross-vm-atomic-integration-interlayersdk)
+  - [14.7 InterClaw Autonomous Agent Framework (`pallet-agent`)](#147-interclaw-autonomous-agent-framework-pallet-agent)
+- [**Chapter 15: System Invariants & Protocol Guarantees**](#chapter-15-system-invariants-protocol-guarantees)
+  - [15.1 Guarantee: Atomicity Invariant](#151-guarantee-atomicity-invariant)
+  - [15.2 Guarantee: No Double Spend](#152-guarantee-no-double-spend)
+  - [15.3 Comprehensive Architectural Symbol Mapping Table](#153-comprehensive-architectural-symbol-mapping-table)
+- [**Appendix A: Testnet Deployment Configuration**](#appendix-a-testnet-deployment-configuration)
+  - [A.1 Genesis Chain Specification (from `chain_spec.rs`)](#a1-genesis-chain-specification-from-chain_specrs)
+- [**Appendix B: List of Figures**](#appendix-b-list-of-figures)
+- [**Appendix C: Public Runtime Composition Index**](#appendix-c-public-runtime-composition-index)
+- [**Appendix D: Canonical Protocol Type Definitions**](#appendix-d-canonical-protocol-type-definitions)
+  - [D.1 `MelTx`  Universal Transaction Envelope](#d1-meltx-universal-transaction-envelope)
+  - [D.2 `VmType`  Virtual Machine Discriminant Enum](#d2-vmtype-virtual-machine-discriminant-enum)
+  - [D.3 `ExecutionResult`  Transaction Receipt](#d3-executionresult-transaction-receipt)
+  - [D.4 `MelConfig`  Global MEL Configuration](#d4-melconfig-global-mel-configuration)
+  - [D.5 `AtomicBundle`  Cross-VM Atomic Transaction Bundle](#d5-atomicbundle-cross-vm-atomic-transaction-bundle)
+  - [D.6 `MelEvent`  Cross-VM Event Structure](#d6-melevent-cross-vm-event-structure)
+  - [D.7 `VmAdapter` Trait  Universal VM Interface](#d7-vmadapter-trait-universal-vm-interface)
+  - [D.8 `MelError`  Comprehensive Error Enumeration](#d8-melerror-comprehensive-error-enumeration)
+  - [D.9 `CrossVmMessage`  Inter-VM Communication Message](#d9-crossvmmessage-inter-vm-communication-message)
+  - [D.10 VM Account Structures](#d10-vm-account-structures)
+- [**Appendix E: Gas Calibration Constants & Cross-VM Overhead Matrix**](#appendix-e-gas-calibration-constants-cross-vm-overhead-matrix)
+  - [E.1 Base Gas Costs per VM](#e1-base-gas-costs-per-vm)
+  - [E.2 Operation Multipliers](#e2-operation-multipliers)
+  - [E.3 Per-VM Instruction Weight Table](#e3-per-vm-instruction-weight-table)
+  - [E.4 Cross-VM Overhead Factor Matrix](#e4-cross-vm-overhead-factor-matrix)
+  - [E.5 Global Gas Calibration Constants](#e5-global-gas-calibration-constants)
+  - [E.6 Atomic Execution Timeout Constants](#e6-atomic-execution-timeout-constants)
+  - [E.7 Gas Estimation per VM for Atomic Bundles](#e7-gas-estimation-per-vm-for-atomic-bundles)
+- [**Appendix F: MPC Threshold Signer Protocol Listings**](#appendix-f-mpc-threshold-signer-protocol-listings)
+  - [F.1 Distributed Key Generation (DKG)](#f1-distributed-key-generation-dkg)
+  - [F.2 Nonce Commitment Round](#f2-nonce-commitment-round)
+  - [F.3 Signature Share and Aggregation](#f3-signature-share-and-aggregation)
+  - [F.4 Signature Verification](#f4-signature-verification)
+  - [F.5 Lagrange Coefficient Computation](#f5-lagrange-coefficient-computation)
+  - [F.6 Transcript and Failure Handling](#f6-transcript-and-failure-handling)
+- [**Appendix G: HotStuff Consensus Protocol Reference**](#appendix-g-hotstuff-consensus-protocol-reference)
+  - [G.1 Consensus State](#g1-consensus-state)
+  - [G.2 Linked 3-Chain Finalization Rule](#g2-linked-3-chain-finalization-rule)
+  - [G.3 BLS12-381 Quorum Certificate](#g3-bls12-381-quorum-certificate)
+  - [G.4 Consensus Messages](#g4-consensus-messages)
+- [**Appendix H: Atomic Execution State Machine Reference**](#appendix-h-atomic-execution-state-machine-reference)
+  - [H.1 `AtomicExecutionState`  Execution Lifecycle Struct](#h1-atomicexecutionstate-execution-lifecycle-struct)
+  - [H.2 Phase Progression Table](#h2-phase-progression-table)
+  - [H.3 Rollback Implementation](#h3-rollback-implementation)
+  - [H.4 Validation Rules for Atomic Context](#h4-validation-rules-for-atomic-context)
+- [**Appendix I: Glossary of Terms**](#appendix-i-glossary-of-terms)
 
 ---
 
@@ -256,7 +431,7 @@ fn execute_atomic_bundle(state: GlobalState, bundle: AtomicBundle) -> (GlobalSta
 ```
 
 
-### 3.5 MEV Protection & Frontrun Guard Pipeline
+### 3.4 MEV Protection & Frontrun Guard Pipeline
 
 To prevent malicious front-running, sandwich attacks, and value extraction by block proposers, the Multi-VM Execution Layer integrates `pallet-mev-protection` and `mev_controls`:
 
@@ -279,7 +454,7 @@ enum Ordering {
 2. **Encrypted Batch Staging**: In Phase 2, atomic bundle transactions are staged in transient memory under zero-knowledge or threshold encryption. Validators execute state transitions without visibility into individual contract swap parameters until the state diff is finalized.
 3. **Fair Ordering Enforcement**: The consensus engine enforces strict FIFO or blind-auction ordering rules, penalizing validators via `pallet-slashing` if re-ordering or front-running patterns are detected.
 
-### 3.4 Universal Gas Metering & Calibration Engine
+### 3.5 Universal Gas Metering & Calibration Engine
 To compute transaction fees fairly across heterogeneous compute engines, MEL maps native VM instruction units to a standardized gas metric using calibration multipliers:
 
 ```rust
@@ -331,14 +506,14 @@ InterLayer introduces a **Dual-Mode Address Architecture** designed to bridge na
 
 2. **Mode 2 — Account Abstraction Smart Accounts**: Managed by `pallet-smart-accounts`, enabling multi-sig threshold rules, session keys, emergency key recovery, and gas sponsorship. Smart accounts wrap underlying VM execution handles, allowing a single transaction to execute across multiple VM environments under unified authorization.
 
-### 4.2 Universal Handle System (`@username`)
+### 4.2 Universal Handle System (`username`)
 
 To simplify user interaction, `unified-address-registry` provides an on-chain **Universal Handle System**:
 - Users register human-readable handles (e.g., `alice`) via `mel_registerHandle`.
 - **Name Normalization**: Handles are automatically lowercased, stripped of trailing whitespace, and checked for character uniqueness to prevent spoofing and homograph attacks.
 - **Replay Protection**: Each address binding increments a deterministic binding nonce, preventing signature replay across chains or VM instances.
 
-### 4.3 Address Resolution (`resolve_address()`)
+### 4.3 Address Resolution Protocol (`resolve_address()`)
 
 Every account entity on InterLayer is assigned a canonical 32-byte unified address. The registry maintains a restricted mapping between unified addresses and each VM's native address space.
 
@@ -346,7 +521,7 @@ A global bijection from 32-byte unified identifiers to a 20-byte EVM address spa
 
 A mapping is valid only while its handle, ownership proof, domain, and address-format checks remain active on-chain.
 
-### 4.2 Unified Address Resolution & Dual-Layer Binding Architecture
+### 4.4 Unified Address Resolution & Dual-Layer Binding Architecture
 
 InterLayer unifies on-chain identity through a **Dual-Layer Address Architecture** managed jointly by `pallet-handles` and `unified-address-registry`:
 
@@ -371,7 +546,7 @@ InterLayer unifies on-chain identity through a **Dual-Layer Address Architecture
 
 ---
 
-### 4.3 Balance Conservation Invariant
+### 4.5 Balance Conservation Invariant
 For any unified address `a`, let `balance(a, k)` denote native `IL` tokens held within sub-state `k`. Global balance conservation requires that the sum of all balances across all sub-states plus the treasury reserve equals the total token supply at all times. No transaction or atomic bundle may create or destroy tokens — only transfer them between sub-states.
 
 ### 4.6 Implementation: `unified-address-registry` Pallet
@@ -614,7 +789,7 @@ Rather than locking tokens on Chain A to mint wrapped synthetic assets on Chain 
 Traditional bridges lock funds on Chain A to mint synthetic wrapped tokens (e.g. `wBTC`, `wETH`) on Chain B, introducing smart contract vulnerability points and fragmented token liquidity. InterLayer eliminates wrapped synthetic assets entirely through **LiteVerse DePIN Watchers** and **MPC Threshold Signing**.
 
 
-### 5.3 LiteVerse DePIN Node Tier Architecture
+### 5.2 LiteVerse DePIN Node Tier Architecture
 
 The LiteVerse network operates as a decentralized mesh of consumer devices connected to InterLayer validators via `libp2p` (gossipsub + Kademlia DHT):
 
@@ -627,7 +802,7 @@ The LiteVerse network operates as a decentralized mesh of consumer devices conne
 **Witness Consensus Threshold**: A deposit event is confirmed on InterLayer when validated by **>67% of active Mobile Watchers** in the registered watcher set. The `liteverse-pallet` Witness module accepts signed witness statements and only credits the user's unified balance after the threshold is reached.
 
 
-### 5.4 External Chain Confirmation Depths & Circuit Breakers
+### 5.3 External Chain Confirmation Depths & Circuit Breakers
 
 Deposit finalization from external chains requires minimum confirmation depths to prevent reorg-based double-spend attacks:
 
@@ -648,11 +823,11 @@ Deposit finalization from external chains requires minimum confirmation depths t
 - **Emergency Shutdown**: Governance or sudo can activate emergency shutdown to freeze all external asset routes.
 - **Suspicious Account Tracking**: Addresses flagged for anomalous behavior are rate-limited and require whitelist approval for large operations.
 
-### 5.2 Liquidity Inflow & Outflow Flowchart
+### 5.4 Liquidity Inflow & Outflow Flowchart
 
 ![Figure 5: Liquidity Inflow and Outflow — User deposit flow through external chains, unique deposit addresses, LiteVerse verification, and unified balance. Withdrawal flow through validators and MPC threshold signing.](images/liquidity_flow.png)
 
-### 5.3 Implementation: `liteverse-pallet` Architecture
+### 5.5 Implementation: `liteverse-pallet` Architecture
 
 The LiteVerse DePIN watcher mesh is implemented in the **LiteVerse Framework** pallet . This is the largest custom pallet in the InterLayer runtime and contains chain-specific verification modules, a task assignment system, a points-based reward economy, and a withdrawal pipeline.
 
@@ -950,7 +1125,7 @@ The leader for each view is determined by `self.is_leader()`, which computes `cu
 ---
 
 
-### 6.5 Dynamic Block Timing & Adaptive Interval Adjustments
+### 6.8 Dynamic Block Timing & Adaptive Interval Adjustments
 
 While the base consensus loop targets a **sub-500ms block interval** with a 10ms fast polling loop, `dynamic_blocks` and `block_timing` dynamically adjust block production parameters based on real-time network conditions:
 
@@ -1211,7 +1386,7 @@ and broadcast commitments . Participant j sends f_j(i) to participant i only ove
 
 After complaint resolution, each participant holds , its public verification share is Y_i=x_iG, and the group public key is . The transcript commits to the participant set, threshold, epoch, commitments, complaints, and resolutions. The DKG output is rejected unless exactly one verified transcript is agreed for the epoch.
 
-### 8.3 Threshold Signing Protocol (Schnorr)
+### 8.6 Threshold Signing Protocol (Schnorr)
 
 Signing follows a two-round FROST-compatible threshold Schnorr flow. For a request digest m and a canonical signing subset T ():
 
@@ -1222,7 +1397,7 @@ Signing follows a two-round FROST-compatible threshold Schnorr flow. For a reque
 
 The coordinator is not trusted: it cannot substitute a signer set, commitment list, request digest, epoch, destination, amount, or derivation path because each is included in m and in the binding transcript. A one-round scheme that uses one signer's R while summing all signers' scalars is not a valid threshold Schnorr signature and is expressly outside this specification.
 
-### 8.4 Lagrange Interpolation Coefficients
+### 8.7 Lagrange Interpolation Coefficients
 
 The Lagrange coefficient  for participant i within signing subset T is computed as:
 
@@ -1234,7 +1409,7 @@ The verifier checks the fully encoded R point, scalar range, even-Y convention w
 
 where , R is the aggregate nonce point, s is the aggregate scalar, and Y is the group public key. The challenge and binding hashes use distinct tagged domain separators; raw SHA-256 concatenation without framing is not sufficient.
 
-### 8.6 BIP-32/44 Hierarchical Deterministic Key Derivation
+### 8.9 BIP-32/44 Hierarchical Deterministic Key Derivation
 
 For deposit-address allocation, the protocol derives child *public keys* from an epoch key without reconstructing a private key. For a non-hardened index i, let . The child public key is
 
@@ -1245,7 +1420,7 @@ The allocated path binds the environment, external chain, account, and user inde
 ---
 
 
-### 8.3 CEX-Style MPC Address Derivation (`hd_wallet`)
+### 8.10 CEX-Style MPC Address Derivation (`hd_wallet`)
 
 InterLayer's MPC infrastructure provides **CEX-style deterministic address derivation**, generating unique per-user deposit addresses on every supported external chain — similar to how centralized exchanges (Binance, Coinbase) assign deposit addresses, but fully decentralized via threshold MPC:
 
@@ -1416,7 +1591,7 @@ The gas calibration engine (`GasCalibrationConfig`) implements a sophisticated m
 ---
 
 
-### 10.9 Unified Multi-VM Governance Framework
+### 10.7 Unified Multi-VM Governance Framework
 
 InterLayer governance operates through a multi-layer decision-making structure implemented via `governance-pallet` and `multi-vm-governance`:
 
@@ -1450,7 +1625,7 @@ InterLayer governance operates through a multi-layer decision-making structure i
 
 Changes affecting the unified transaction envelope, cross-VM message bus protocols, asset interoperability rules, or the unified addressing system require approval from **all three VM-specific governance bodies** plus a chain-wide token vote.
 
-### 10.7 Payment Channels & Off-Chain Micro-Transactions
+### 10.8 Payment Channels & Off-Chain Micro-Transactions
 
 For high-frequency micro-payments (game loop actions, IoT telemetry, streaming payments), `payment_channels_pallet` provides off-chain state channel infrastructure:
 
@@ -1470,7 +1645,7 @@ struct PaymentChannel {
 - **Off-Chain Transfers**: State updates are signed bilaterally off-chain with zero gas fees and sub-millisecond latency.
 - **Settlement & Dispute Resolution**: Either party can submit the latest state sequence on-chain. A challenge period allows the counterparty to submit a higher nonce state if fraudulent closure is attempted.
 
-### 10.8 Gas Sponsorship Engine & Sponsored Transactions
+### 10.9 Gas Sponsorship Engine & Sponsored Transactions
 
 To onboard non-crypto-native users, `gas_sponsorship_pallet` enables third-party dApps or protocols to sponsor transaction gas fees:
 
