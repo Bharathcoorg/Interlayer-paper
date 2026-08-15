@@ -44,16 +44,16 @@ This document specifies the technical architecture and protocol design of **Inte
 | Component | Status | Details |
 | :--- | :--- | :--- |
 | **Substrate Runtime** | Implemented | 173 KB monolithic runtime kernel (`runtime/src/lib.rs`) |
-| **Runtime Pallets** | Implemented (38 Pallets) | 36 core active runtime pallets + 2 optional legacy pallets (`bridge-pallet`, `dex-pallet`) |
-| **HotStuff BFT Consensus** | Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) |
-| **VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | Implemented | Compiled inline within the monolithic Substrate runtime kernel |
-| **RPC Handlers** | Implemented | 10 handler files, 4,381 total lines across 18 namespaces |
-| **MPC Threshold Signer** | Implemented | `mpc-executor/`: 9 Rust source files; `mpc-nodes/` and `mpc-recovery/` container configurations |
-| **Portal Dashboard** | Standalone Utility | External Web3 dApp interface (`portal/`) for testnet interaction (not a runtime pallet) |
-| **Block Explorer** | Standalone Utility | Standalone block and state explorer (`explorer/`) interacting via JSON-RPC |
-| **LiteVerse Watcher Nodes** | Implemented | Mobile Watcher Node (Android/iOS), Browser Node (WASM), and LiteVerse Dashboard (Tier 0 & Tier 1) |
-| **Bridge Pallet** | Optional | 915 lines implemented; preserved in codebase for optional future governance activation |
-| **DEX Pallet** | Optional | 218 lines implemented; preserved in codebase for optional future governance activation |
+| **Runtime Pallets** | Implemented (36 Pallets) | 36 core active runtime pallets specifying multi-VM execution, identity, and governance |
+| **HotStuff BFT Consensus** | Implemented | 17 Rust source files, 4,235 lines (`consensus/hotstuff/`) implementing Pipelined 3-Chain HotStuff BFT |
+| **Multi-VM Adapters (EVM, SVM, PolkaVM, Move, CosmWasm)** | Implemented | Compiled inline within the monolithic Substrate runtime kernel (`mel-evm`, `mel-svm`, `mel-polkavm`, `mel-move`, `mel-cosmwasm`) |
+| **RPC Interface Suite** | Implemented | 10 handler files, 4,381 total lines across 18 JSON-RPC namespaces |
+| **MPC Threshold Signer (TSS)** | Implemented | `mpc-executor/`: 9 Rust source files for DKG and threshold signing across BTC, ETH, SOL, DOT, TON |
+| **LiteVerse DePIN Watcher Mesh** | Implemented | Mobile Watcher Node (Android/iOS), Browser Node (WASM), and LiteVerse Dashboard (Tier 0 & Tier 1 active) |
+| **InterClaw AI Agent Framework** | Implemented | Autonomous agent intent execution engine backed on-chain by `pallet-agent` |
+| **Portal Dashboard** | Standalone Utility | External Web3 dApp user interface (`portal/`) for smart accounts and multi-VM contract interaction |
+| **Block Explorer** | Standalone Utility | Standalone block and state explorer (`explorer.interlayer.one`) interacting via JSON-RPC |
+| **Developer Faucet** | Standalone Utility | Testnet token distribution faucet (`faucet.interlayer.one`) backed on-chain by `pallet-faucet` |
 
 ---
 
